@@ -1,0 +1,38 @@
+name: Build ReZeroGram
+
+on: 
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Скачиваем файлы из репозитория
+        uses: actions/checkout@v4
+
+      - name: Устанавливаем Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Создаем ключи Telegram API (API_KEYS)
+        run: |
+          echo "APP_ID=39700964" > API_KEYS
+          echo "APP_HASH=48075269202b86ee34896583ed6adf90" >> API_KEYS
+          echo "MAPS_V2_API=" >> API_KEYS
+          echo "SIGNING_KEY_STORE_PASSWORD=" >> API_KEYS
+          echo "SIGNING_KEY_PASSWORD=" >> API_KEYS
+          echo "SIGNING_KEY_ALIAS=" >> API_KEYS
+
+      - name: Даем права и собираем APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Сохраняем готовый APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ReZeroGram-APK
+          path: '**/*.apk'
