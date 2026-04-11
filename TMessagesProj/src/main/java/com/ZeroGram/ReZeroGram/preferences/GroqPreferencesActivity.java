@@ -124,7 +124,8 @@ public class GroqPreferencesActivity extends BasePreferencesActivity {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getParentActivity());
         builder.setTitle("Выберите модель Groq");
-        builder.setSingleChoiceItems(modelNames, selected, (dialog, which) -> {
+        CharSequence[] modelNamesSeq = modelNames;
+        builder.setItems(modelNamesSeq, (dialog, which) -> {
             GroqManager.getInstance().setModel(modelIds[which]);
             dialog.dismiss();
             listAdapter.notifyItemChanged(groqModelRow, payload);

@@ -81,7 +81,7 @@ public class OtherPreferencesActivity extends BasePreferencesActivity {
             AccountNotificationManager.getInstance().setCurrentAccountNotificationsEnabled(!current);
             ((TextCheckCell) view).setChecked(!current);
             String msg = !current ? "Уведомления аккаунта включены" : "Уведомления аккаунта отключены";
-            BulletinFactory.of(this).createSimpleBulletin(R.drawable.msg_notify, msg).show();
+            BulletinFactory.of(this).createSimpleBulletin(R.drawable.msg2_notifications, msg).show();
         } else if (position == crashlyticsRow) {
             ExteraConfig.editor.putBoolean("useGoogleCrashlytics", ExteraConfig.useGoogleCrashlytics ^= true).apply();
             ((TextCell) view).setChecked(ExteraConfig.useGoogleCrashlytics);

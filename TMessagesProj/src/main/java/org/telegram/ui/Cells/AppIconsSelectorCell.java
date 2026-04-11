@@ -100,7 +100,7 @@ public class AppIconsSelectorCell extends RecyclerListView implements Notificati
                     if (bmp != null) {
                         holderView.iconView.setImageBitmap(bmp);
                     } else {
-                        holderView.iconView.setImageResource(R.drawable.ic_ab_add);
+                        holderView.iconView.setImageResource(R.drawable.ic_ab_new);
                     }
                     holderView.iconView.clearForeground();
                 } else {
