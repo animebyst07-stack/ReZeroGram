@@ -14,11 +14,11 @@ import android.view.ViewGroup;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.utils.ChatUtils;
-import com.exteragram.messenger.utils.SystemUtils;
-import com.radolyn.ayugram.AyuConfig;
-import com.radolyn.ayugram.AyuConstants;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.utils.ChatUtils;
+import com.ZeroGram.ReZeroGram.utils.SystemUtils;
+import com.ZeroGram.ReZeroGram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuConstants;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.LocaleController;

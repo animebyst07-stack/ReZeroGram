@@ -65,7 +65,7 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ui.AspectRatioFrameLayout;
 
-import com.radolyn.ayugram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuConfig;
 import org.telegram.messenger.audioinfo.AudioInfo;
 import org.telegram.messenger.video.MediaCodecVideoConvertor;
 import org.telegram.messenger.voip.VoIPService;
@@ -104,8 +104,8 @@ import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 
-import com.exteragram.messenger.utils.SystemUtils;
-import com.radolyn.ayugram.AyuConstants;
+import com.ZeroGram.ReZeroGram.utils.SystemUtils;
+import com.ZeroGram.ReZeroGram.AyuConstants;
 
 public class MediaController implements AudioManager.OnAudioFocusChangeListener, NotificationCenter.NotificationCenterDelegate, SensorEventListener {
 

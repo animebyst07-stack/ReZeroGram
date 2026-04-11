@@ -47,7 +47,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 
-import com.exteragram.messenger.ExteraConfig;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
 
 public class ReactedUsersListView extends FrameLayout {
 

@@ -76,8 +76,8 @@ import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.Components.Premium.LimitReachedBottomSheet;
 import org.telegram.ui.Components.RecyclerListView;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.utils.CanvasUtils;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.utils.CanvasUtils;
 
 import java.util.ArrayList;
 

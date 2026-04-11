@@ -1,6 +1,6 @@
 package org.telegram.messenger;
 
-import com.radolyn.ayugram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuConfig;
 
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.SQLite.SQLiteDatabase;

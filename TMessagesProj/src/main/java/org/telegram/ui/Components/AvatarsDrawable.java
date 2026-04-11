@@ -30,7 +30,7 @@ import org.telegram.ui.Cells.GroupCallUserCell;
 
 import java.util.Random;
 
-import com.exteragram.messenger.ExteraConfig;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
 
 public class AvatarsDrawable {
 

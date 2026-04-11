@@ -138,7 +138,7 @@
             android:value="@string/MAPS_V2_API" />
 
         <activity-alias
-            android:name="com.exteragram.messenger.DefaultIcon"
+            android:name="com.ZeroGram.ReZeroGram.DefaultIcon"
             android:enabled="true"
             android:exported="true"
             android:targetActivity="org.telegram.ui.LaunchActivity">
@@ -155,7 +155,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.MonetIcon"
+            android:name="com.ZeroGram.ReZeroGram.MonetIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_monet"
@@ -174,7 +174,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.GradientIcon"
+            android:name="com.ZeroGram.ReZeroGram.GradientIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_gradient"
@@ -190,7 +190,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.GoogleIcon"
+            android:name="com.ZeroGram.ReZeroGram.GoogleIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_google"
@@ -209,7 +209,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.Dsgn480Icon"
+            android:name="com.ZeroGram.ReZeroGram.Dsgn480Icon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_480dsgn"
@@ -228,7 +228,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.AuroraIcon"
+            android:name="com.ZeroGram.ReZeroGram.AuroraIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_aurora"
@@ -244,7 +244,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.SpaceIcon"
+            android:name="com.ZeroGram.ReZeroGram.SpaceIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_space"
@@ -260,7 +260,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.WinterIcon"
+            android:name="com.ZeroGram.ReZeroGram.WinterIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_winter"
@@ -276,7 +276,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.NeoIcon"
+            android:name="com.ZeroGram.ReZeroGram.NeoIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_neo"
@@ -295,7 +295,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.OrbitIcon"
+            android:name="com.ZeroGram.ReZeroGram.OrbitIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_orbit"
@@ -314,7 +314,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.AmethystIcon"
+            android:name="com.ZeroGram.ReZeroGram.AmethystIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_amethyst"
@@ -333,7 +333,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.SusIcon"
+            android:name="com.ZeroGram.ReZeroGram.SusIcon"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_sus"
@@ -352,7 +352,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.CustomIcon1"
+            android:name="com.ZeroGram.ReZeroGram.CustomIcon1"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
@@ -367,7 +367,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.CustomIcon2"
+            android:name="com.ZeroGram.ReZeroGram.CustomIcon2"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
@@ -382,7 +382,7 @@
         </activity-alias>
 
         <activity-alias
-            android:name="com.exteragram.messenger.CustomIcon3"
+            android:name="com.ZeroGram.ReZeroGram.CustomIcon3"
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher"
@@ -397,7 +397,7 @@
         </activity-alias>
 
         <activity
-            android:name="com.exteragram.messenger.icons.CustomIconCropActivity"
+            android:name="com.ZeroGram.ReZeroGram.icons.CustomIconCropActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenSize"
             android:exported="false"
             android:theme="@style/Theme.TMessages" />

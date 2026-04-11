@@ -92,9 +92,9 @@ import org.telegram.ui.Components.UndoView;
 import java.util.ArrayList;
 import java.util.Collections;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.utils.FolderIcons;
-import com.exteragram.messenger.components.IconSelectorAlert;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.utils.FolderIcons;
+import com.ZeroGram.ReZeroGram.components.IconSelectorAlert;
 
 public class FilterCreateActivity extends BaseFragment {
 

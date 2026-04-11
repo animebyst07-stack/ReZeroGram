@@ -34,17 +34,17 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.multidex.MultiDex;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.camera.CameraXUtils;
-import com.exteragram.messenger.groq.GroqManager;
-import com.exteragram.messenger.notifications.AccountNotificationManager;
-import com.exteragram.messenger.icons.CustomIconManager;
-import com.exteragram.messenger.utils.CrashlyticsUtils;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.camera.CameraXUtils;
+import com.ZeroGram.ReZeroGram.groq.GroqManager;
+import com.ZeroGram.ReZeroGram.notifications.AccountNotificationManager;
+import com.ZeroGram.ReZeroGram.icons.CustomIconManager;
+import com.ZeroGram.ReZeroGram.utils.CrashlyticsUtils;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
-import com.radolyn.ayugram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuConfig;
 
-import com.radolyn.ayugram.sync.AyuSyncController;
+import com.ZeroGram.ReZeroGram.sync.AyuSyncController;
 import org.telegram.messenger.voip.VideoCapturerDevice;
 import org.telegram.tgnet.ConnectionsManager;
 import org.telegram.tgnet.TLRPC;
@@ -144,7 +144,7 @@ public class ApplicationLoader extends Application {
         } catch (Exception e) {
             FileLog.e(e);
         }
-        return new File("/data/data/com.radolyn.ayugram/files");
+        return new File("/data/data/com.ZeroGram.ReZeroGram/files");
     }
 
     public static void postInitApplication() {

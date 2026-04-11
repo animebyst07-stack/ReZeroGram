@@ -16,10 +16,10 @@ import android.util.LongSparseArray;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
-import com.radolyn.ayugram.AyuConfig;
-import com.radolyn.ayugram.AyuConstants;
-import com.radolyn.ayugram.messages.AyuMessagesController;
-import com.radolyn.ayugram.messages.AyuSavePreferences;
+import com.ZeroGram.ReZeroGram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuConstants;
+import com.ZeroGram.ReZeroGram.messages.AyuMessagesController;
+import com.ZeroGram.ReZeroGram.messages.AyuSavePreferences;
 import org.telegram.SQLite.SQLiteCursor;
 import org.telegram.messenger.support.LongSparseIntArray;
 import org.telegram.tgnet.AbstractSerializedData;

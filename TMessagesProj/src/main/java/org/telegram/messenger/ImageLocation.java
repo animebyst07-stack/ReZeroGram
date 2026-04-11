@@ -1,6 +1,6 @@
 package org.telegram.messenger;
 
-import com.radolyn.ayugram.utils.AyuFileLocation;
+import com.ZeroGram.ReZeroGram.utils.AyuFileLocation;
 
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;

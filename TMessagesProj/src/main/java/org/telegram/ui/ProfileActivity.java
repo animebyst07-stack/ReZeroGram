@@ -96,15 +96,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.preferences.MainPreferencesActivity;
-import com.exteragram.messenger.utils.AppUtils;
-import com.exteragram.messenger.utils.CanvasUtils;
-import com.exteragram.messenger.utils.ChatUtils;
-import com.exteragram.messenger.utils.LocaleUtils;
-import com.radolyn.ayugram.AyuConfig;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.preferences.MainPreferencesActivity;
+import com.ZeroGram.ReZeroGram.utils.AppUtils;
+import com.ZeroGram.ReZeroGram.utils.CanvasUtils;
+import com.ZeroGram.ReZeroGram.utils.ChatUtils;
+import com.ZeroGram.ReZeroGram.utils.LocaleUtils;
+import com.ZeroGram.ReZeroGram.AyuConfig;
 
-import com.radolyn.ayugram.ui.preferences.AyuGramPreferencesActivity;
+import com.ZeroGram.ReZeroGram.ui.preferences.AyuGramPreferencesActivity;
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;

@@ -9,11 +9,11 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.util.Base64;
 
-import com.radolyn.ayugram.AyuConfig;
-import com.radolyn.ayugram.AyuConstants;
-import com.radolyn.ayugram.sync.AyuSyncController;
-import com.radolyn.ayugram.utils.AyuGhostUtils;
-import com.radolyn.ayugram.utils.AyuState;
+import com.ZeroGram.ReZeroGram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuConstants;
+import com.ZeroGram.ReZeroGram.sync.AyuSyncController;
+import com.ZeroGram.ReZeroGram.utils.AyuGhostUtils;
+import com.ZeroGram.ReZeroGram.utils.AyuState;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

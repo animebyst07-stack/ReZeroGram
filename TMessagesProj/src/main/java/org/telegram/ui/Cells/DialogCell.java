@@ -49,8 +49,8 @@ import androidx.collection.LongSparseArray;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 
-import com.radolyn.ayugram.AyuFilter;
-import com.radolyn.ayugram.AyuUtils;
+import com.ZeroGram.ReZeroGram.AyuFilter;
+import com.ZeroGram.ReZeroGram.AyuUtils;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ChatObject;
@@ -115,8 +115,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.boost.filter.ZalgoFilter;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.boost.filter.ZalgoFilter;
 
 public class DialogCell extends BaseCell {
 

@@ -63,10 +63,10 @@ import androidx.annotation.RawRes;
 import androidx.annotation.RequiresApi;
 import androidx.core.util.Consumer;
 
-import com.radolyn.ayugram.AyuConstants;
-import com.radolyn.ayugram.messages.AyuMessagesController;
-import com.radolyn.ayugram.messages.AyuSavePreferences;
-import com.radolyn.ayugram.utils.AyuState;
+import com.ZeroGram.ReZeroGram.AyuConstants;
+import com.ZeroGram.ReZeroGram.messages.AyuMessagesController;
+import com.ZeroGram.ReZeroGram.messages.AyuSavePreferences;
+import com.ZeroGram.ReZeroGram.utils.AyuState;
 import org.telegram.messenger.AccountInstance;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ApplicationLoader;
@@ -129,7 +129,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.exteragram.messenger.ExteraConfig;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
 
 public class AlertsCreator {
     public final static int PERMISSIONS_REQUEST_TOP_ICON_SIZE = 72;

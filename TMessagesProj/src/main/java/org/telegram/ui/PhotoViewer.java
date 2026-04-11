@@ -124,11 +124,11 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.LinearSmoothScrollerEnd;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.utils.CanvasUtils;
-import com.exteragram.messenger.utils.PopupUtils;
-import com.exteragram.messenger.utils.SystemUtils;
-import com.exteragram.messenger.utils.TranslatorUtils;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.utils.CanvasUtils;
+import com.ZeroGram.ReZeroGram.utils.PopupUtils;
+import com.ZeroGram.ReZeroGram.utils.SystemUtils;
+import com.ZeroGram.ReZeroGram.utils.TranslatorUtils;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.analytics.AnalyticsListener;
@@ -137,7 +137,7 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.face.Face;
 import com.google.android.gms.vision.face.FaceDetector;
 
-import com.radolyn.ayugram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuConfig;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.AnimationNotificationsLocker;
 import org.telegram.messenger.ApplicationLoader;

@@ -35,7 +35,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 
 import androidx.annotation.Keep;
 
-import com.exteragram.messenger.ExteraConfig;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
 
 import java.lang.reflect.Method;
 

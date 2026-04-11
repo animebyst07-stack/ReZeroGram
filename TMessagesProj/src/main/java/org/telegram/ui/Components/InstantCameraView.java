@@ -66,13 +66,13 @@ import androidx.camera.core.SurfaceOrientedMeteringPointFactory;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.ColorUtils;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.camera.CameraXController;
-import com.exteragram.messenger.camera.CameraXUtils;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.camera.CameraXController;
+import com.ZeroGram.ReZeroGram.camera.CameraXUtils;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.util.Log;
 
-import com.radolyn.ayugram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuConfig;
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.AnimationNotificationsLocker;
 import org.telegram.messenger.ApplicationLoader;

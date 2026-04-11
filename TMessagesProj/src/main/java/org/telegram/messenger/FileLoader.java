@@ -11,7 +11,7 @@ package org.telegram.messenger;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
-import com.radolyn.ayugram.utils.AyuFileLocation;
+import com.ZeroGram.ReZeroGram.utils.AyuFileLocation;
 
 import org.telegram.tgnet.TLObject;
 import org.telegram.tgnet.TLRPC;

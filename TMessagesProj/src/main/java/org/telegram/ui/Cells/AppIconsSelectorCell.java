@@ -54,9 +54,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.exteragram.messenger.icons.CustomIconManager;
-import com.exteragram.messenger.icons.CustomIconCropActivity;
-import com.exteragram.messenger.utils.ChatUtils;
+import com.ZeroGram.ReZeroGram.icons.CustomIconManager;
+import com.ZeroGram.ReZeroGram.icons.CustomIconCropActivity;
+import com.ZeroGram.ReZeroGram.utils.ChatUtils;
 
 public class AppIconsSelectorCell extends RecyclerListView implements NotificationCenter.NotificationCenterDelegate {
     public final static float ICONS_ROUND_RADIUS = 100;

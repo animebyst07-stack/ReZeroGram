@@ -64,7 +64,7 @@ import org.telegram.ui.Components.Bulletin;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.LayoutHelper;
 
-import com.exteragram.messenger.camera.CameraXView;
+import com.ZeroGram.ReZeroGram.camera.CameraXView;
 
 import java.util.ArrayList;
 

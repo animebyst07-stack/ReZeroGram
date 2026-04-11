@@ -1,0 +1,7 @@
+package com.ZeroGram.ReZeroGram.groq;
+
+public interface GroqCallback {
+    void onSuccess(String restructuredText);
+    void onError(String errorMessage);
+    void onProcessing();
+}

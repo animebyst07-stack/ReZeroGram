@@ -38,7 +38,7 @@ import androidx.annotation.RequiresApi;
 import androidx.core.graphics.ColorUtils;
 import androidx.exifinterface.media.ExifInterface;
 
-import com.radolyn.ayugram.AyuConstants;
+import com.ZeroGram.ReZeroGram.AyuConstants;
 
 import org.json.JSONArray;
 import org.json.JSONObject;

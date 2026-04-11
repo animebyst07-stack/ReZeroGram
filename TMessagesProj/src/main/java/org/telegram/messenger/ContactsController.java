@@ -29,8 +29,8 @@ import android.util.SparseArray;
 
 import androidx.collection.LongSparseArray;
 
-import com.exteragram.messenger.boost.filter.ZalgoFilter;
-import com.radolyn.ayugram.AyuConstants;
+import com.ZeroGram.ReZeroGram.boost.filter.ZalgoFilter;
+import com.ZeroGram.ReZeroGram.AyuConstants;
 
 import org.telegram.PhoneFormat.PhoneFormat;
 import org.telegram.tgnet.ConnectionsManager;

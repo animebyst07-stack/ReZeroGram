@@ -47,11 +47,11 @@ import androidx.annotation.UiThread;
 import androidx.collection.LongSparseArray;
 import androidx.core.view.inputmethod.InputContentInfoCompat;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.radolyn.ayugram.AyuConfig;
-import com.radolyn.ayugram.AyuForwarder;
-import com.radolyn.ayugram.AyuUtils;
-import com.radolyn.ayugram.utils.AyuState;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.AyuConfig;
+import com.ZeroGram.ReZeroGram.AyuForwarder;
+import com.ZeroGram.ReZeroGram.AyuUtils;
+import com.ZeroGram.ReZeroGram.utils.AyuState;
 
 import org.json.JSONObject;
 import org.telegram.messenger.audioinfo.AudioInfo;

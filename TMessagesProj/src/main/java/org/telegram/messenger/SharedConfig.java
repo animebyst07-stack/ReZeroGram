@@ -24,7 +24,7 @@ import android.webkit.WebView;
 import androidx.annotation.IntDef;
 import androidx.core.content.pm.ShortcutManagerCompat;
 
-import com.radolyn.ayugram.AyuConstants;
+import com.ZeroGram.ReZeroGram.AyuConstants;
 
 import org.json.JSONObject;
 import org.telegram.tgnet.ConnectionsManager;

@@ -37,7 +37,7 @@ import org.telegram.ui.Components.RLottieImageView;
 
 import java.util.ArrayList;
 
-import com.exteragram.messenger.ExteraConfig;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
 
 public class TextSettingsCell extends FrameLayout {
 

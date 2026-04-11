@@ -68,11 +68,11 @@ import androidx.dynamicanimation.animation.SpringForce;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.exteragram.messenger.ExteraConfig;
-import com.exteragram.messenger.utils.CanvasUtils;
-import com.exteragram.messenger.utils.PopupUtils;
-import com.exteragram.messenger.utils.SystemUtils;
-import com.exteragram.messenger.utils.TranslatorUtils;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
+import com.ZeroGram.ReZeroGram.utils.CanvasUtils;
+import com.ZeroGram.ReZeroGram.utils.PopupUtils;
+import com.ZeroGram.ReZeroGram.utils.SystemUtils;
+import com.ZeroGram.ReZeroGram.utils.TranslatorUtils;
 
 import org.telegram.messenger.AndroidUtilities;
 import org.telegram.messenger.ChatObject;

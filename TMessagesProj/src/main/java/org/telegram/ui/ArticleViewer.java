@@ -181,7 +181,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-import com.exteragram.messenger.ExteraConfig;
+import com.ZeroGram.ReZeroGram.ExteraConfig;
 
 public class ArticleViewer implements NotificationCenter.NotificationCenterDelegate {
 

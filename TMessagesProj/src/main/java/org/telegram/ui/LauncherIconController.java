@@ -6,8 +6,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 
-import com.exteragram.messenger.icons.CustomIconManager;
-import com.exteragram.messenger.utils.AppUtils;
+import com.ZeroGram.ReZeroGram.icons.CustomIconManager;
+import com.ZeroGram.ReZeroGram.utils.AppUtils;
 
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.BuildVars;
@@ -72,7 +72,7 @@ public class LauncherIconController {
 
         public ComponentName getComponentName(Context ctx) {
             if (componentName == null) {
-                componentName = new ComponentName(ctx.getPackageName(), "com.exteragram.messenger." + key);
+                componentName = new ComponentName(ctx.getPackageName(), "com.ZeroGram.ReZeroGram." + key);
             }
             return componentName;
         }
