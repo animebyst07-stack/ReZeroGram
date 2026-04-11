@@ -151,7 +151,6 @@ android {
         debug {
             debuggable true
             jniDebuggable false
-            signingConfig signingConfigs.release
             minifyEnabled false
             shrinkResources false
             multiDexEnabled true
