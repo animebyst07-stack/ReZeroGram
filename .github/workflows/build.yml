@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Скачиваем файлы из репозитория
+      - name: Скачиваем файлы
         uses: actions/checkout@v4
 
       - name: Устанавливаем Java 17
@@ -20,21 +20,13 @@ jobs:
       - name: Создаем ключи Telegram API
         run: |
           echo "APP_ID=39700964" > API_KEYS
-          # ВАЖНО: добавили одинарные и двойные кавычки, чтобы Java поняла, что это текст
           echo 'APP_HASH="48075269202b86ee34896583ed6adf90"' >> API_KEYS
           echo 'MAPS_V2_API=""' >> API_KEYS
           echo 'SIGNING_KEY_STORE_PASSWORD=""' >> API_KEYS
           echo 'SIGNING_KEY_PASSWORD=""' >> API_KEYS
           echo 'SIGNING_KEY_ALIAS=""' >> API_KEYS
 
-      - name: Фикс Google Services и памяти
-        run: |
-          find . -name "google-services.json" -exec sed -i 's/com.radolyn.ayugram/com.ZeroGram.ReZeroGram/g' {} +
-          find . -name "google-services.json" -exec sed -i 's/com.exteragram.messenger/com.ZeroGram.ReZeroGram/g' {} +
-          # Увеличили стековую память с 4m до 8m, чтобы компилятор не падал от перегруза
-          echo "org.gradle.jvmargs=-Xmx6g -Xss8m" >> gradle.properties
-
-      - name: Даем права и собираем APK
+      - name: Сборка APK
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
@@ -43,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ReZeroGram-APK
-          path: '**/*.apk'
+          path: '**/build/outputs/apk/debug/*.apk'
