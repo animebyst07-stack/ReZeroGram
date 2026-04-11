@@ -1,0 +1,248 @@
+================================================================
+           ZEROGRAM — ПЛАН РАЗРАБОТКИ (ФОРК AYOGRAM)
+================================================================
+Дата: 11 апреля 2026
+Исходный проект: AyuGram4A-rewrite
+Цель: Брендированный форк ZeroGram с Groq AI, кастомными иконками и управлением уведомлениями
+
+================================================================
+ЗАДАЧА 1: БРЕНДИНГ И ПЕРЕИМЕНОВАНИЕ
+================================================================
+
+[1.1] gradle.properties
+  - APP_PACKAGE: com.radolyn.ayugram → com.ZeroGram.ReZeroGram
+  - outputFileName: ayuGram-*.apk → zerogram-*.apk
+
+[1.2] API_KEYS (новый файл в корне проекта)
+  - APP_ID=39700964
+  - APP_HASH=48075269202b86ee34896583ed6adf90
+  - Также прочие ключи-заглушки из build.gradle
+
+[1.3] TMessagesProj/src/main/res/values/strings.xml
+  - Заменить все "AyuGram" / "Ayogram" / "ayugram" → "ZeroGram"
+  - Строка AppName: "ZeroGram"
+  - Строки уведомлений, уведомлений о брендинге
+
+[1.4] TMessagesProj/build.gradle
+  - outputFileName: "ayuGram-..." → "zerogram-..."
+  - Добавить зависимость okhttp3 (уже есть!) и gson (уже есть!)
+  - Убедиться что APP_PACKAGE читается правильно
+
+[1.5] AndroidManifest.xml
+  - Добавить activity-alias для CustomIcon1, CustomIcon2, CustomIcon3
+  - Изменить android:label на "ZeroGram" везде
+  - Добавить android:icon для кастомных иконок (placeholder)
+
+================================================================
+ЗАДАЧА 2: GROQ AI ИНТЕГРАЦИЯ (нативный Java-сервис)
+================================================================
+
+[2.1] Новый файл: com/exteragram/messenger/groq/GroqConfig.java
+  - Константы: URL Groq API, доступные модели, дефолтный промпт
+  - DEFAULT_PROMPT = "Rewrite the following text to improve its structure
+    and clarity without changing the meaning. Focus only on organization,
+    flow, and readability. Do not add new information, opinions, suggestions,
+    or commentary. Preserve all original content but reorganize sentences
+    and paragraphs if needed for logical order. Provide the rewritten text
+    only, with no extra explanation: "
+
+[2.2] Новый файл: com/exteragram/messenger/groq/GroqManager.java
+  - Синглтон-менеджер, изолированный от TGNet
+  - Использует OkHttp3 (уже в проекте: 4.10.0)
+  - Методы:
+    * init(Context) — загрузка настроек из SharedPreferences
+    * isEnabled() — активен ли (есть ключ + включён)
+    * setApiKey(String) — сохранение ключа
+    * setModel(String) — сохранение модели
+    * setCustomPrompt(String) — кастомный промпт
+    * restructureText(String text, GroqCallback callback) — основная функция
+    * testConnection(GroqCallback callback) — тест ключа
+    * cancelRequest() — отмена текущего запроса
+  - Отдельный OkHttpClient с таймаутами 30s
+  - Работает в background thread, callback на main thread
+  - Не затрагивает ConnectionsManager / TGNet
+
+[2.3] Интерфейс: com/exteragram/messenger/groq/GroqCallback.java
+  - onSuccess(String restructuredText)
+  - onError(String errorMessage)
+  - onProcessing() — для показа прогресса
+
+[2.4] Настройки в ExteraConfig.java
+  - groqApiKey (String)
+  - groqModel (String, default: "llama-3.3-70b-versatile")
+  - groqEnabled (boolean)
+  - groqCustomPrompt (String, default: DEFAULT_PROMPT)
+
+[2.5] UI: Кнопка Groq в поле ввода сообщения
+  - Файл: org/telegram/ui/ChatActivity.java
+  - Добавить кнопку "✨ AI" рядом с полем ввода
+  - При нажатии: взять текст из поля → отправить в GroqManager → вставить результат
+  - Показывать ProgressBar пока идёт обработка
+  - AlertDialog с ошибкой если что-то пошло не так
+
+[2.6] Новый файл: com/exteragram/messenger/preferences/GroqPreferencesActivity.java
+  - Секция "Groq AI" в настройках
+  - Поле ввода API ключа (с кнопкой "показать/скрыть")
+  - Выбор модели (список: llama-3.3-70b-versatile, llama-3.1-8b-instant,
+    llama-3.2-3b-preview, gemma2-9b-it, mixtral-8x7b-32768)
+  - Поле для кастомного промпта (EditText, многострочный)
+  - Кнопка "Сбросить промпт к стандартному"
+  - Кнопка "Проверить подключение"
+  - Переключатель вкл/выкл Groq
+  - Стиль: BasePreferencesActivity (как в остальных секциях Ayogram)
+
+[2.7] Добавить пункт "Groq AI" в главное меню настроек
+  - Файл: org/telegram/ui/ProfileActivity.java или SettingsActivity.java
+
+================================================================
+ЗАДАЧА 3: УПРАВЛЕНИЕ УВЕДОМЛЕНИЯМИ ПО АККАУНТАМ
+================================================================
+
+[3.1] Новый файл: com/exteragram/messenger/notifications/AccountNotificationManager.java
+  - Управление per-account настройками уведомлений
+  - Хранение в SharedPreferences: "notif_enabled_<userId>"
+  - Методы:
+    * isNotificationsEnabled(long userId) → boolean
+    * setNotificationsEnabled(long userId, boolean enabled)
+    * shouldShowNotification(long userId, long chatId) → boolean
+  - При отключении: mute всех чатов аккаунта (через NotificationsController)
+  - При включении: снять глобальный mute аккаунта
+
+[3.2] UI в настройках аккаунта
+  - Файл: org/telegram/ui/ProfileActivity.java (секция для аккаунта)
+  - Добавить переключатель "Уведомления для аккаунта"
+  - При переключении вызывать AccountNotificationManager
+
+================================================================
+ЗАДАЧА 4: КАСТОМНЫЕ ИКОНКИ ПРИЛОЖЕНИЯ
+================================================================
+
+КОНЦЕПЦИЯ:
+  - Android не позволяет менять иконку лаунчера на произвольный bitmap в рантайме
+  - Решение: 3 pre-declared activity-alias ("CustomIcon1/2/3") в манифесте
+    с placeholder-иконкой
+  - Пользователь загружает фото → кадрирует → сохраняется в internal storage
+  - В UI выбора иконок кастомные иконки отображаются (реальное фото!)
+  - При выборе кастомной иконки — активируется соответствующий alias
+  - На рабочем столе Android показывает статический placeholder (ограничение ОС),
+    но ВНУТРИ приложения во всех UI-местах показывается реальное фото
+  - Пользователь всегда знает какая иконка активна
+
+[4.1] Добавить в AndroidManifest.xml:
+  - <activity-alias android:name="com.exteragram.messenger.CustomIcon1" ...>
+  - <activity-alias android:name="com.exteragram.messenger.CustomIcon2" ...>
+  - <activity-alias android:name="com.exteragram.messenger.CustomIcon3" ...>
+  - Все с android:icon="@mipmap/ic_launcher_custom_placeholder"
+
+[4.2] Новый файл: com/exteragram/messenger/icons/CustomIconManager.java
+  - Директория хранения: getFilesDir()/custom_icons/
+  - Методы:
+    * saveCustomIcon(int slot, Bitmap bitmap) → boolean
+    * loadCustomIcon(int slot) → Bitmap
+    * deleteCustomIcon(int slot)
+    * hasCustomIcon(int slot) → boolean
+    * getCustomIconCount() → int
+    * getCustomIconBitmap(int slot) → Bitmap
+
+[4.3] Новый файл: com/exteragram/messenger/icons/CustomIconCropActivity.java
+  - Экран кадрирования изображения
+  - Загрузка из галереи (Intent.ACTION_PICK)
+  - Ручное кадрирование: зажимаемый квадратный селектор поверх изображения
+  - Кнопки: "Готово" / "Отмена"
+  - Результат — квадратный Bitmap 192x192 (стандарт Android mipmap-xxxhdpi)
+  - Сохранение через CustomIconManager
+
+[4.4] Расширить LauncherIconController.java
+  - Добавить в enum LauncherIcon:
+    CUSTOM1("CustomIcon1", ...), CUSTOM2("CustomIcon2", ...), CUSTOM3("CustomIcon3", ...)
+  - getDisplayBitmap(int slot) — возвращает реальное фото для UI
+
+[4.5] Расширить AppIconsSelectorCell.java
+  - Отдельная секция "Кастомные иконки" после стандартных
+  - Кнопка "+" (добавить новую) — открывает CustomIconCropActivity
+  - Карточки кастомных иконок с реальным preview
+  - Долгое нажатие на кастомную иконку → диалог "Удалить?"
+  - При удалении активной кастомной иконки → автоматически переключиться на DEFAULT
+
+================================================================
+ЗАДАЧА 5: СБОРКА И КОНФИГУРАЦИЯ
+================================================================
+
+[5.1] Создать API_KEYS файл в корне проекта:
+  APP_ID=39700964
+  APP_HASH=48075269202b86ee34896583ed6adf90
+  MAPS_V2_API=
+  SIGNING_KEY_STORE_PASSWORD=
+  SIGNING_KEY_PASSWORD=
+  SIGNING_KEY_ALIAS=
+
+[5.2] Проверить и обновить зависимости в build.gradle:
+  - OkHttp3 4.10.0 (уже есть) ✓
+  - Gson 2.10.1 (уже есть) ✓
+  - Room 2.5.2 (уже есть) ✓
+  - Добавить: нет новых зависимостей нужно
+
+[5.3] Убедиться в корректности local.properties / settings.gradle
+
+[5.4] gradle assembleDebug должен проходить без ошибок
+
+================================================================
+ПОСЛЕДОВАТЕЛЬНОСТЬ РЕАЛИЗАЦИИ
+================================================================
+
+Шаг 1: Брендинг (gradle.properties, strings.xml, build.gradle, manifest)
+Шаг 2: API_KEYS файл
+Шаг 3: GroqConfig.java + GroqCallback.java + GroqManager.java
+Шаг 4: Добавить Groq настройки в ExteraConfig.java
+Шаг 5: GroqPreferencesActivity.java (UI настроек Groq)
+Шаг 6: Добавить кнопку Groq в ChatActivity
+Шаг 7: AccountNotificationManager.java + UI
+Шаг 8: Кастомные иконки (manifest aliases + CustomIconManager + crop UI)
+Шаг 9: Расширение AppIconsSelectorCell (кастомные слоты с preview)
+Шаг 10: Финальная проверка зависимостей
+
+================================================================
+ФАЙЛЫ НЕ ТРОГАЕМ (TGNet и сетевое ядро Telegram)
+================================================================
+- org/telegram/tgnet/ConnectionsManager.java
+- org/telegram/tgnet/TLRPC.java
+- org/telegram/messenger/voip/*
+- Всё внутри org/telegram/tgnet/
+
+================================================================
+
+================================================================
+СЕССИЯ 2 — ЗАВЕРШЁННЫЕ ЗАДАЧИ (11.04.2026)
+================================================================
+
+[DONE] AndroidManifest.xml
+  + activity-alias: CustomIcon1, CustomIcon2, CustomIcon3 (android:enabled="false")
+  + activity declaration: CustomIconCropActivity (exported=false)
+
+[DONE] LauncherIconController.java
+  + CUSTOM1/CUSTOM2/CUSTOM3 enum entries с isCustomSlot=true, customSlotIndex=1/2/3
+  + Методы: getCustomBitmap(), hasCustomBitmap()
+  + Новый 7-аргументный конструктор для custom слотов
+
+[DONE] AppIconsSelectorCell.java
+  + onBindViewHolder: отображение bitmap или '+' для custom слотов
+  + clearForeground() в AdaptiveIconImageView
+  + setOnItemClickListener: для пустого слота → открывает CustomIconCropActivity
+  + setOnItemLongClickListener: для заполненного слота → диалог удаления иконки
+  + bind(): метка "Кастом N" / "+N" для кастомных слотов
+  + refreshCustomIcons() публичный метод
+
+[DONE] CustomIconCropActivity.java
+  + Полная Activity с нативным CropView (touch-based square crop)
+  + Выбор фото из галереи (ACTION_PICK)
+  + Предпросмотр обрезанного изображения
+  + Сохранение через CustomIconManager.saveCustomIcon()
+
+[DONE] OtherPreferencesActivity.java
+  + Секция "Уведомления аккаунта" (notificationsHeaderRow + accountNotificationsRow)
+  + TextCheckCell с toggle для AccountNotificationManager.setCurrentAccountNotificationsEnabled()
+  + BulletinFactory обратная связь после переключения
+
+================================================================
+ИТОГ: ВСЕ ЗАДАЧИ ВЫПОЛНЕНЫ
+================================================================
