@@ -1,0 +1,87 @@
+ReZeroGram — Plan of Fixes & Features
+=======================================
+
+[BUG-1] Исправлен ClassCastException в GroqPreferencesActivity
+---------------------------------------------------------------
+Файл: TMessagesProj/src/main/java/com/ZeroGram/ReZeroGram/preferences/GroqPreferencesActivity.java
+
+Причина бага:
+  В BasePreferencesActivity.onCreateViewHolder типы View закреплены следующим образом:
+    type 1  → ShadowSectionCell
+    type 2  → TextCell
+    type 3  → HeaderCell
+    type 4  → HeaderSettingsCell   ← базовый класс создаёт HeaderSettingsCell для типа 4
+    type 5  → TextCheckCell        ← базовый класс создаёт TextCheckCell для типа 5
+    type 8  → TextInfoPrivacyCell
+
+  Но GroqPreferencesActivity.getItemViewType() возвращал:
+    groqEnabledRow → 4  (а базовый класс для типа 4 создаёт HeaderSettingsCell!)
+    groqInfoRow/groqPromptInfoRow → 5 (а базовый класс для типа 5 создаёт TextCheckCell!)
+
+  В результате onBindViewHolder пытался сделать:
+    case 4: TextCheckCell checkCell = (TextCheckCell) holder.itemView;
+  Но holder.itemView на самом деле был HeaderSettingsCell → ClassCastException.
+
+Исправление (строки 302-312 в исходнике):
+  getItemViewType():
+    groqEnabledRow: изменено возвращаемое значение с 4 на 5 (TextCheckCell)
+    groqInfoRow, groqPromptInfoRow: изменено с 5 на 8 (TextInfoPrivacyCell)
+
+  onBindViewHolder():
+    case 4 → case 5 (TextCheckCell для groqEnabledRow)
+    case 5 → case 8 (TextInfoPrivacyCell для info-строк)
+
+Примечание: BaseListAdapter.isEnabled() содержит "type == 5" в списке кликабельных типов,
+  что означает TextCheckCell (groqEnabledRow) — кликабельна ✓
+  TextInfoPrivacyCell (type 8) — не кликабельна (не в списке) ✓
+
+
+[FEATURE-2] Кнопка Groq AI в поле ввода сообщений
+---------------------------------------------------
+Файл: TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java
+
+Что добавлено:
+
+1. Новые поля (рядом с attachButton, примерно строка 467):
+     private ImageView groqInputButton;
+     private String groqOriginalText = null;
+     private boolean groqTextReplaced = false;
+
+2. Инициализация кнопки в блоке isChat (после attachButton.setContentDescription, ~строка 2055):
+   - Создаётся ImageView groqInputButton с иконкой msg_translate (✨ эффект)
+   - Добавляется в attachLayout на позицию 0 (самый левый в прикреплённых кнопках)
+   - Начальная видимость: GONE
+   - При клике в обычном режиме:
+       * Сохраняет текущий текст в groqOriginalText
+       * Блокирует кнопку (setEnabled(false), alpha 0.4)
+       * Вызывает GroqManager.restructureText()
+       * При успехе: вставляет ответ Groq в поле, устанавливает иконку msg_retry (undo)
+       * При ошибке: показывает Toast с текстом ошибки
+       * При обработке: показывает Toast "✨ Groq обрабатывает текст..."
+   - При клике в режиме undo (groqTextReplaced == true):
+       * Возвращает исходный текст из groqOriginalText
+       * Сбрасывает флаги
+       * Возвращает иконку msg_translate
+
+3. Новый метод updateGroqInputButton(boolean hasText) (~строка 6536):
+   - Показывает кнопку если: hasText && GroqManager.getInstance().isEnabled()
+   - Скрывает кнопку если нет текста или Groq не включён
+   - При скрытии сбрасывает состояние undo
+
+4. Обновлён метод updateFieldRight(int attachVisible) (~строка 6551):
+   - Добавлена переменная groqExtra = 48dp если groqInputButton VISIBLE, иначе 0
+   - groqExtra прибавляется ко всем значениям rightMargin при attachVisible == 1 и 2
+   - Это гарантирует, что текст не перекрывает кнопку Groq
+
+5. Добавлен вызов updateGroqInputButton() в TextWatcher.onTextChanged() (~строка 4304):
+   - Вызывается после checkSendButton(true)
+   - Передаёт !TextUtils.isEmpty(charSequence)
+
+Логика работы для пользователя:
+  1. Пользователь пишет текст в поле ввода
+  2. Если Groq включён (API-ключ задан), появляется кнопка ✨ справа в поле
+  3. При нажатии — текст отправляется в Groq API
+  4. Ответ Groq заменяет текст в поле ввода
+  5. Иконка меняется на "стрелку назад" (msg_retry = undo)
+  6. При повторном нажатии — исходный текст восстанавливается
+  7. При очистке поля — кнопка скрывается, состояние undo сбрасывается

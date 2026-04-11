@@ -462,6 +462,9 @@ public class ChatActivityEnterView extends BlurredFrameLayout implements Notific
     private int originalViewHeight;
     private LinearLayout attachLayout;
     private ImageView attachButton;
+    private ImageView groqInputButton;
+    private String groqOriginalText = null;
+    private boolean groqTextReplaced = false;
     @Nullable
     private ImageView botButton;
     private FrameLayout messageEditTextContainer;
@@ -2047,6 +2050,57 @@ public class ChatActivityEnterView extends BlurredFrameLayout implements Notific
                 delegate.didPressAttachButton();
             });
             attachButton.setContentDescription(LocaleController.getString("AccDescrAttachButton", R.string.AccDescrAttachButton));
+
+            groqInputButton = new ImageView(context);
+            groqInputButton.setScaleType(ImageView.ScaleType.CENTER);
+            groqInputButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
+            groqInputButton.setImageResource(R.drawable.msg_translate);
+            groqInputButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector)));
+            groqInputButton.setContentDescription("Groq AI");
+            groqInputButton.setVisibility(GONE);
+            attachLayout.addView(groqInputButton, 0, LayoutHelper.createLinear(48, 48));
+            groqInputButton.setOnClickListener(v -> {
+                if (groqTextReplaced && groqOriginalText != null) {
+                    messageEditText.setText(groqOriginalText);
+                    messageEditText.setSelection(groqOriginalText.length());
+                    groqTextReplaced = false;
+                    groqOriginalText = null;
+                    groqInputButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
+                    groqInputButton.setImageResource(R.drawable.msg_translate);
+                    return;
+                }
+                CharSequence current = messageEditText.getText();
+                if (current == null || current.toString().trim().isEmpty()) return;
+                if (!GroqManager.getInstance().isEnabled()) return;
+                String textToProcess = current.toString();
+                groqOriginalText = textToProcess;
+                groqInputButton.setEnabled(false);
+                groqInputButton.setAlpha(0.4f);
+                GroqManager.getInstance().restructureText(textToProcess, new GroqCallback() {
+                    @Override
+                    public void onSuccess(String restructuredText) {
+                        groqInputButton.setEnabled(true);
+                        groqInputButton.setAlpha(1.0f);
+                        messageEditText.setText(restructuredText);
+                        messageEditText.setSelection(restructuredText.length());
+                        groqTextReplaced = true;
+                        groqInputButton.setImageResource(R.drawable.msg_retry);
+                    }
+                    @Override
+                    public void onError(String errorMessage) {
+                        groqInputButton.setEnabled(true);
+                        groqInputButton.setAlpha(1.0f);
+                        groqOriginalText = null;
+                        AndroidUtilities.runOnUIThread(() ->
+                            android.widget.Toast.makeText(getContext(), "Groq: " + errorMessage, android.widget.Toast.LENGTH_LONG).show());
+                    }
+                    @Override
+                    public void onProcessing() {
+                        AndroidUtilities.runOnUIThread(() ->
+                            android.widget.Toast.makeText(getContext(), "✨ Groq обрабатывает текст...", android.widget.Toast.LENGTH_SHORT).show());
+                    }
+                });
+            });
         }
 
         if (audioToSend != null) {
@@ -4244,6 +4298,7 @@ public class ChatActivityEnterView extends BlurredFrameLayout implements Notific
                 }
                 isPaste = false;
                 checkSendButton(true);
+                updateGroqInputButton(!TextUtils.isEmpty(charSequence));
                 CharSequence message = AndroidUtilities.getTrimmedString(charSequence.toString());
                 if (delegate != null) {
                     if (!ignoreTextChange) {
@@ -6475,28 +6530,44 @@ public class ChatActivityEnterView extends BlurredFrameLayout implements Notific
         }
     }
 
+    private void updateGroqInputButton(boolean hasText) {
+        if (groqInputButton == null) return;
+        boolean shouldShow = hasText && GroqManager.getInstance().isEnabled();
+        int newVis = shouldShow ? VISIBLE : GONE;
+        if (groqInputButton.getVisibility() != newVis) {
+            groqInputButton.setVisibility(newVis);
+            if (!shouldShow) {
+                groqTextReplaced = false;
+                groqOriginalText = null;
+                groqInputButton.setColorFilter(new PorterDuffColorFilter(getThemedColor(Theme.key_chat_messagePanelIcons), PorterDuff.Mode.MULTIPLY));
+                groqInputButton.setImageResource(R.drawable.msg_translate);
+            }
+        }
+    }
+
     private void updateFieldRight(int attachVisible) {
         if (messageEditText == null || editingMessageObject != null) {
             return;
         }
         FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) messageEditText.getLayoutParams();
         int oldRightMargin = layoutParams.rightMargin;
+        int groqExtra = (groqInputButton != null && groqInputButton.getVisibility() == VISIBLE) ? 48 : 0;
         if (attachVisible == 1) {
             if (botButton != null && botButton.getVisibility() == VISIBLE && scheduledButton != null && scheduledButton.getVisibility() == VISIBLE && attachLayout != null && attachLayout.getVisibility() == VISIBLE) {
-                layoutParams.rightMargin = AndroidUtilities.dp(146);
+                layoutParams.rightMargin = AndroidUtilities.dp(146 + groqExtra);
             } else if (botButton != null && botButton.getVisibility() == VISIBLE || notifyButton != null && notifyButton.getVisibility() == VISIBLE || scheduledButton != null && scheduledButton.getTag() != null) {
-                layoutParams.rightMargin = AndroidUtilities.dp(98);
+                layoutParams.rightMargin = AndroidUtilities.dp(98 + groqExtra);
             } else {
-                layoutParams.rightMargin = AndroidUtilities.dp(50);
+                layoutParams.rightMargin = AndroidUtilities.dp(50 + groqExtra);
             }
         } else if (attachVisible == 2) {
             if (layoutParams.rightMargin != AndroidUtilities.dp(2)) {
                 if (botButton != null && botButton.getVisibility() == VISIBLE && scheduledButton != null && scheduledButton.getVisibility() == VISIBLE && attachLayout != null && attachLayout.getVisibility() == VISIBLE) {
-                    layoutParams.rightMargin = AndroidUtilities.dp(146);
+                    layoutParams.rightMargin = AndroidUtilities.dp(146 + groqExtra);
                 } else if (botButton != null && botButton.getVisibility() == VISIBLE || notifyButton != null && notifyButton.getVisibility() == VISIBLE || scheduledButton != null && scheduledButton.getTag() != null) {
-                    layoutParams.rightMargin = AndroidUtilities.dp(98);
+                    layoutParams.rightMargin = AndroidUtilities.dp(98 + groqExtra);
                 } else {
-                    layoutParams.rightMargin = AndroidUtilities.dp(50);
+                    layoutParams.rightMargin = AndroidUtilities.dp(50 + groqExtra);
                 }
             }
         } else {

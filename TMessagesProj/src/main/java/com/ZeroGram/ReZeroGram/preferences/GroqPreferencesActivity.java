@@ -272,7 +272,7 @@ public class GroqPreferencesActivity extends BasePreferencesActivity {
                         headerCell.setText("Промпт");
                     }
                     break;
-                case 4:
+                case 5:
                     TextCheckCell checkCell = (TextCheckCell) holder.itemView;
                     if (position == groqEnabledRow) {
                         checkCell.setTextAndCheck(
@@ -281,7 +281,7 @@ public class GroqPreferencesActivity extends BasePreferencesActivity {
                                 true);
                     }
                     break;
-                case 5:
+                case 8:
                     TextInfoPrivacyCell infoCell = (TextInfoPrivacyCell) holder.itemView;
                     if (position == groqInfoRow) {
                         infoCell.setText(
@@ -300,8 +300,8 @@ public class GroqPreferencesActivity extends BasePreferencesActivity {
         @Override
         public int getItemViewType(int position) {
             if (position == groqHeaderRow || position == promptHeaderRow) return 3;
-            if (position == groqEnabledRow)                               return 4;
-            if (position == groqInfoRow || position == groqPromptInfoRow) return 5;
+            if (position == groqEnabledRow)                               return 5;
+            if (position == groqInfoRow || position == groqPromptInfoRow) return 8;
             if (position == groqApiKeyRow || position == groqModelRow ||
                 position == groqTestRow  || position == groqPromptRow ||
                 position == groqResetPromptRow)                           return 2;
