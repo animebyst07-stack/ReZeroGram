@@ -19,7 +19,6 @@ jobs:
 
       - name: Создаем ключи Telegram API
         run: |
-          cd zerogram
           echo "APP_ID=39700964" > API_KEYS
           echo "APP_HASH=48075269202b86ee34896583ed6adf90" >> API_KEYS
           echo "MAPS_V2_API=" >> API_KEYS
@@ -29,16 +28,12 @@ jobs:
 
       - name: Фикс Google Services и памяти
         run: |
-          cd zerogram
-          # Ищем гугловский файл и меняем старое название на твое новое
           find . -name "google-services.json" -exec sed -i 's/com.radolyn.ayugram/com.ZeroGram.ReZeroGram/g' {} +
           find . -name "google-services.json" -exec sed -i 's/com.exteragram.messenger/com.ZeroGram.ReZeroGram/g' {} +
-          # Даем компилятору больше памяти, чтобы не было StackOverflowError
           echo "org.gradle.jvmargs=-Xmx6g -Xss4m" >> gradle.properties
 
       - name: Даем права и собираем APK
         run: |
-          cd zerogram
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
 
