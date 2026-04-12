@@ -232,7 +232,11 @@ public class AyuSyncController {
     }
 
     public void onForceSync(SyncForce req) {
-        var accountId = accounts.get(req.userId);
+        Integer accountId = accounts.get(req.userId);
+        if (accountId == null) {
+            Log.w("AyuSync", "onForceSync: unknown userId=" + req.userId);
+            return;
+        }
 
         var controller = MessagesController.getInstance(accountId);
 
@@ -261,7 +265,10 @@ public class AyuSyncController {
         }
 
         var readEventsMessage = new Gson().toJson(readsBatchEvent);
-        AyuSyncWebSocketClient.getInstance().send(readEventsMessage);
+        AyuSyncWebSocketClient wsClient1 = AyuSyncWebSocketClient.getInstance();
+        if (wsClient1 != null) {
+            wsClient1.send(readEventsMessage);
+        }
 
         // ~ sync edits history
 //        var editedMessageDao = AyuData.getEditedMessageDao();
@@ -276,11 +283,17 @@ public class AyuSyncController {
 //        }
 
         var finishEvent = new Gson().toJson(new SyncForceFinish());
-        AyuSyncWebSocketClient.getInstance().send(finishEvent);
+        AyuSyncWebSocketClient wsClient2 = AyuSyncWebSocketClient.getInstance();
+        if (wsClient2 != null) {
+            wsClient2.send(finishEvent);
+        }
     }
 
     public void onBatchSync(JsonObject req) {
-        for (var event : req.getAsJsonObject("args").get("events").getAsJsonArray()) {
+        if (req == null || !req.has("args")) return;
+        JsonObject args = req.getAsJsonObject("args");
+        if (args == null || !args.has("events")) return;
+        for (var event : args.get("events").getAsJsonArray()) {
             invokeHandler(event.getAsJsonObject());
         }
     }
@@ -288,6 +301,9 @@ public class AyuSyncController {
     public void syncRead(int accountId, long dialogId, int untilId) {
         var controller = MessagesController.getInstance(accountId);
         var dialog = controller.getDialog(dialogId);
+        if (dialog == null) {
+            return;
+        }
         var unread = controller.getDialogUnreadCount(dialog);
 
         var req = new SyncRead();
@@ -303,16 +319,23 @@ public class AyuSyncController {
         var message = new Gson().toJson(req);
 
         Log.d("AyuSync", "Sending sync_read: " + message);
-        AyuSyncWebSocketClient.getInstance().send(message);
+        AyuSyncWebSocketClient wsClient = AyuSyncWebSocketClient.getInstance();
+        if (wsClient != null) {
+            wsClient.send(message);
+        }
     }
 
     public void onSyncRead(SyncRead req) {
-        var accountId = accounts.get(req.userId);
+        Integer accountId = accounts.get(req.userId);
+        if (accountId == null) {
+            Log.w("AyuSync", "onSyncRead: unknown userId=" + req.userId);
+            return;
+        }
 
         var controller = MessagesController.getInstance(accountId);
 
         var dialog = controller.getDialog(req.args.dialogId);
-        if (dialog.unread_count <= req.args.unread) {
+        if (dialog == null || dialog.unread_count <= req.args.unread) {
             return;
         }
 
@@ -321,6 +344,11 @@ public class AyuSyncController {
 
     public void invokeHandler(JsonObject req) {
         Log.d("AyuSync", req.toString());
+
+        if (req == null || !req.has("userId") || !req.has("type")) {
+            Log.w("AyuSync", "invokeHandler: invalid request");
+            return;
+        }
 
         var userId = req.get("userId").getAsLong();
         var type = req.get("type").getAsString();

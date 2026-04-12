@@ -21,10 +21,22 @@ public class AyuData {
     private static DeletedMessageDao deletedMessageDao;
 
     static {
-        create();
+        try {
+            if (ApplicationLoader.applicationContext != null) {
+                create();
+            }
+        } catch (Exception e) {
+            // will be initialized later
+        }
     }
 
     public static void create() {
+        if (ApplicationLoader.applicationContext == null) {
+            return;
+        }
+        if (database != null) {
+            return;
+        }
         database = Room.databaseBuilder(ApplicationLoader.applicationContext, AyuDatabase.class, AyuConstants.AYU_DATABASE)
                 .allowMainThreadQueries()
                 .fallbackToDestructiveMigration()
@@ -35,14 +47,23 @@ public class AyuData {
     }
 
     public static AyuDatabase getDatabase() {
+        if (database == null) {
+            create();
+        }
         return database;
     }
 
     public static EditedMessageDao getEditedMessageDao() {
+        if (editedMessageDao == null) {
+            create();
+        }
         return editedMessageDao;
     }
 
     public static DeletedMessageDao getDeletedMessageDao() {
+        if (deletedMessageDao == null) {
+            create();
+        }
         return deletedMessageDao;
     }
 

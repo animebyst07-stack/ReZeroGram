@@ -87,9 +87,9 @@ public class IconSelectorAlert {
                 }
             };
             imageView.setBackground(Theme.createRadSelectorDrawable(Theme.getColor(Theme.key_listSelector), 7, 7));
-            imageView.setSelected(icon.equals(selectedIcon));
+            imageView.setSelected(selectedIcon != null && selectedIcon.equals(icon));
             imageView.setOnClickListener(v -> {
-                if (selectedIcon.equals(icon)) {
+                if (icon.equals(selectedIcon)) {
                     return;
                 }
                 if (scrimPopupWindowRef.get() != null) {
