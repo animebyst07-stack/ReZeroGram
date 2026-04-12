@@ -29,6 +29,7 @@ import org.telegram.tgnet.TLRPC;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AyuMessagesController {
@@ -38,36 +39,54 @@ public class AyuMessagesController {
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), AyuConstants.APP_NAME),
             attachmentsSubfolder
     );
-    private static AyuMessagesController instance;
+    private static volatile AyuMessagesController instance;
+    private static final Object lock = new Object();
     private final EditedMessageDao editedMessageDao;
     private final DeletedMessageDao deletedMessageDao;
 
     private AyuMessagesController() {
         initializeAttachmentsFolder();
 
-        editedMessageDao = AyuData.getEditedMessageDao();
-        deletedMessageDao = AyuData.getDeletedMessageDao();
+        EditedMessageDao tmpEdited = null;
+        DeletedMessageDao tmpDeleted = null;
+        try {
+            tmpEdited = AyuData.getEditedMessageDao();
+            tmpDeleted = AyuData.getDeletedMessageDao();
+        } catch (Exception e) {
+            Log.e("AyuGram", "Failed to initialize DAOs", e);
+        }
+        editedMessageDao = tmpEdited;
+        deletedMessageDao = tmpDeleted;
     }
 
     private static void initializeAttachmentsFolder() {
-        if (!attachmentsPath.exists()) {
-            attachmentsPath.mkdirs();
-            try {
-                new File(attachmentsPath, ".nomedia").createNewFile();
-            } catch (IOException e) {
-                // ignored, I hate java
+        try {
+            if (!attachmentsPath.exists()) {
+                attachmentsPath.mkdirs();
+                try {
+                    new File(attachmentsPath, ".nomedia").createNewFile();
+                } catch (IOException e) {
+                    // ignored
+                }
             }
+        } catch (Exception e) {
+            // no permissions or storage unavailable
         }
     }
 
     public static AyuMessagesController getInstance() {
         if (instance == null) {
-            instance = new AyuMessagesController();
+            synchronized (lock) {
+                if (instance == null) {
+                    instance = new AyuMessagesController();
+                }
+            }
         }
         return instance;
     }
 
     public void onMessageEdited(AyuSavePreferences prefs, TLRPC.Message newMessage) {
+        if (editedMessageDao == null) return;
         try {
             onMessageEditedInner(prefs, newMessage, false);
         } catch (Exception e) {
@@ -77,6 +96,7 @@ public class AyuMessagesController {
     }
 
     public void onMessageEditedForce(AyuSavePreferences prefs) {
+        if (editedMessageDao == null) return;
         try {
             onMessageEditedInner(prefs, prefs.getMessage(), true);
         } catch (Exception e) {
@@ -130,6 +150,7 @@ public class AyuMessagesController {
     }
 
     public void onMessageDeleted(AyuSavePreferences prefs) {
+        if (deletedMessageDao == null) return;
         if (prefs.getMessage() == null) {
             Log.w("AyuGram", "null msg ?");
             return;
@@ -198,23 +219,56 @@ public class AyuMessagesController {
     }
 
     public boolean hasAnyRevisions(long userId, long dialogId, int messageId) {
-        return editedMessageDao.hasAnyRevisions(userId, dialogId, messageId);
+        if (editedMessageDao == null) return false;
+        try {
+            return editedMessageDao.hasAnyRevisions(userId, dialogId, messageId);
+        } catch (Exception e) {
+            Log.e("AyuGram", "hasAnyRevisions error", e);
+            return false;
+        }
     }
 
     public List<EditedMessage> getRevisions(long userId, long dialogId, int messageId) {
-        return editedMessageDao.getAllRevisions(userId, dialogId, messageId);
+        if (editedMessageDao == null) return new ArrayList<>();
+        try {
+            List<EditedMessage> result = editedMessageDao.getAllRevisions(userId, dialogId, messageId);
+            return result != null ? result : new ArrayList<>();
+        } catch (Exception e) {
+            Log.e("AyuGram", "getRevisions error", e);
+            return new ArrayList<>();
+        }
     }
 
     public DeletedMessageFull getMessage(long userId, long dialogId, int messageId) {
-        return deletedMessageDao.getMessage(userId, dialogId, messageId);
+        if (deletedMessageDao == null) return null;
+        try {
+            return deletedMessageDao.getMessage(userId, dialogId, messageId);
+        } catch (Exception e) {
+            Log.e("AyuGram", "getMessage error", e);
+            return null;
+        }
     }
 
     public List<DeletedMessageFull> getMessages(long userId, long dialogId, long topicId, int startId, int endId, int limit) {
-        return deletedMessageDao.getMessages(userId, dialogId, topicId, startId, endId, limit);
+        if (deletedMessageDao == null) return new ArrayList<>();
+        try {
+            List<DeletedMessageFull> result = deletedMessageDao.getMessages(userId, dialogId, topicId, startId, endId, limit);
+            return result != null ? result : new ArrayList<>();
+        } catch (Exception e) {
+            Log.e("AyuGram", "getMessages error", e);
+            return new ArrayList<>();
+        }
     }
 
     public List<DeletedMessageFull> getMessagesGrouped(long userId, long dialogId, long groupedId) {
-        return deletedMessageDao.getMessagesGrouped(userId, dialogId, groupedId);
+        if (deletedMessageDao == null) return new ArrayList<>();
+        try {
+            List<DeletedMessageFull> result = deletedMessageDao.getMessagesGrouped(userId, dialogId, groupedId);
+            return result != null ? result : new ArrayList<>();
+        } catch (Exception e) {
+            Log.e("AyuGram", "getMessagesGrouped error", e);
+            return new ArrayList<>();
+        }
     }
 
     public void delete(long userId, long dialogId, int messageId) {
@@ -238,10 +292,11 @@ public class AyuMessagesController {
     }
 
     public void clean() {
-        AyuData.clean();
-        AyuData.create();
+        synchronized (lock) {
+            AyuData.clean();
+            AyuData.create();
 
-        // force to recreate a database to avoid crash
-        instance = null;
+            instance = null;
+        }
     }
 }

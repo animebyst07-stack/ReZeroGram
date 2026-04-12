@@ -16,9 +16,10 @@ import com.ZeroGram.ReZeroGram.database.dao.EditedMessageDao;
 import org.telegram.messenger.ApplicationLoader;
 
 public class AyuData {
-    private static AyuDatabase database;
-    private static EditedMessageDao editedMessageDao;
-    private static DeletedMessageDao deletedMessageDao;
+    private static final Object lock = new Object();
+    private static volatile AyuDatabase database;
+    private static volatile EditedMessageDao editedMessageDao;
+    private static volatile DeletedMessageDao deletedMessageDao;
 
     static {
         try {
@@ -34,16 +35,24 @@ public class AyuData {
         if (ApplicationLoader.applicationContext == null) {
             return;
         }
-        if (database != null) {
-            return;
-        }
-        database = Room.databaseBuilder(ApplicationLoader.applicationContext, AyuDatabase.class, AyuConstants.AYU_DATABASE)
-                .allowMainThreadQueries()
-                .fallbackToDestructiveMigration()
-                .build();
+        synchronized (lock) {
+            if (database != null) {
+                return;
+            }
+            try {
+                database = Room.databaseBuilder(ApplicationLoader.applicationContext, AyuDatabase.class, AyuConstants.AYU_DATABASE)
+                        .allowMainThreadQueries()
+                        .fallbackToDestructiveMigration()
+                        .build();
 
-        editedMessageDao = database.editedMessageDao();
-        deletedMessageDao = database.deletedMessageDao();
+                editedMessageDao = database.editedMessageDao();
+                deletedMessageDao = database.deletedMessageDao();
+            } catch (Exception e) {
+                database = null;
+                editedMessageDao = null;
+                deletedMessageDao = null;
+            }
+        }
     }
 
     public static AyuDatabase getDatabase() {
@@ -68,8 +77,22 @@ public class AyuData {
     }
 
     public static void clean() {
-        database.close();
+        synchronized (lock) {
+            if (database != null) {
+                try {
+                    database.close();
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
 
-        ApplicationLoader.applicationContext.deleteDatabase(AyuConstants.AYU_DATABASE);
+            database = null;
+            editedMessageDao = null;
+            deletedMessageDao = null;
+
+            if (ApplicationLoader.applicationContext != null) {
+                ApplicationLoader.applicationContext.deleteDatabase(AyuConstants.AYU_DATABASE);
+            }
+        }
     }
 }

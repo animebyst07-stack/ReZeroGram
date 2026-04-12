@@ -232,60 +232,62 @@ public class AyuSyncController {
     }
 
     public void onForceSync(SyncForce req) {
-        Integer accountId = accounts.get(req.userId);
-        if (accountId == null) {
-            Log.w("AyuSync", "onForceSync: unknown userId=" + req.userId);
-            return;
-        }
+        try {
+            Integer accountId = accounts.get(req.userId);
+            if (accountId == null) {
+                Log.w("AyuSync", "onForceSync: unknown userId=" + req.userId);
+                return;
+            }
 
-        var controller = MessagesController.getInstance(accountId);
+            var controller = MessagesController.getInstance(accountId);
 
-        // ~ sync dialog states
-        var dialogs = controller.getAllDialogs();
-        var readsBatchEvent = new SyncBatch();
-        readsBatchEvent.userId = req.userId;
+            var dialogs = controller.getAllDialogs();
+            if (dialogs == null) {
+                Log.w("AyuSync", "onForceSync: dialogs is null");
+                return;
+            }
 
-        readsBatchEvent.args = new SyncBatch.SyncBatchArgs();
+            var readsBatchEvent = new SyncBatch();
+            readsBatchEvent.userId = req.userId;
 
-        for (var dialog : dialogs) {
-            var dialogId = dialog.id;
-            var dialogReadMaxId = dialog.read_inbox_max_id;
+            readsBatchEvent.args = new SyncBatch.SyncBatchArgs();
 
-            var unread = controller.getDialogUnreadCount(dialog);
+            for (var dialog : dialogs) {
+                if (dialog == null) continue;
+                var dialogId = dialog.id;
+                var dialogReadMaxId = dialog.read_inbox_max_id;
 
-            var readEv = new SyncRead();
-            readEv.userId = req.userId;
+                int unread;
+                try {
+                    unread = controller.getDialogUnreadCount(dialog);
+                } catch (Exception e) {
+                    unread = 0;
+                }
 
-            readEv.args = new SyncRead.SyncReadArgs();
-            readEv.args.dialogId = dialogId;
-            readEv.args.untilId = dialogReadMaxId;
-            readEv.args.unread = unread;
+                var readEv = new SyncRead();
+                readEv.userId = req.userId;
 
-            readsBatchEvent.args.events.add(readEv);
-        }
+                readEv.args = new SyncRead.SyncReadArgs();
+                readEv.args.dialogId = dialogId;
+                readEv.args.untilId = dialogReadMaxId;
+                readEv.args.unread = unread;
 
-        var readEventsMessage = new Gson().toJson(readsBatchEvent);
-        AyuSyncWebSocketClient wsClient1 = AyuSyncWebSocketClient.getInstance();
-        if (wsClient1 != null) {
-            wsClient1.send(readEventsMessage);
-        }
+                readsBatchEvent.args.events.add(readEv);
+            }
 
-        // ~ sync edits history
-//        var editedMessageDao = AyuData.getEditedMessageDao();
-//        var editedMessagesCount = editedMessageDao.getSyncCount(req.userId, req.args.fromDate);
-//
-//        var pages = Math.ceil(editedMessagesCount / 50.0);
-//        for (var page = 0; page < pages; ++page) {
-//            var edits = editedMessageDao.getForSync(req.userId, req.args.fromDate, page * 50);
-//
-//            var editsMessage = new Gson().toJson(edits);
-//            AyuSyncWebSocketClient.getInstance().send(editsMessage);
-//        }
+            var readEventsMessage = new Gson().toJson(readsBatchEvent);
+            AyuSyncWebSocketClient wsClient1 = AyuSyncWebSocketClient.getInstance();
+            if (wsClient1 != null) {
+                wsClient1.send(readEventsMessage);
+            }
 
-        var finishEvent = new Gson().toJson(new SyncForceFinish());
-        AyuSyncWebSocketClient wsClient2 = AyuSyncWebSocketClient.getInstance();
-        if (wsClient2 != null) {
-            wsClient2.send(finishEvent);
+            var finishEvent = new Gson().toJson(new SyncForceFinish());
+            AyuSyncWebSocketClient wsClient2 = AyuSyncWebSocketClient.getInstance();
+            if (wsClient2 != null) {
+                wsClient2.send(finishEvent);
+            }
+        } catch (Exception e) {
+            Log.e("AyuSync", "onForceSync error", e);
         }
     }
 

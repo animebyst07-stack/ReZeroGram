@@ -36,7 +36,11 @@
 -keep class androidx.camera.video.** { *; }
 
 # AyuSync
--keep class com.radolyn.ayugram.sync.** { *; }
+-keep class com.ZeroGram.ReZeroGram.sync.** { *; }
+-keep class com.ZeroGram.ReZeroGram.sync.models.** { *; }
+-keep class com.ZeroGram.ReZeroGram.database.** { *; }
+-keep class com.ZeroGram.ReZeroGram.database.entities.** { *; }
+-keep class com.ZeroGram.ReZeroGram.database.dao.** { *; }
 
 # https://developers.google.com/ml-kit/known-issues#android_issues
 -keep class com.google.mlkit.nl.languageid.internal.LanguageIdentificationJni { *; }
