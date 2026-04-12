@@ -46,7 +46,7 @@ public class TLRPC {
     //public static final int USER_FLAG_BOT                   = 0x00004000;
     //public static final int USER_FLAG_BOT_READING_HISTORY   = 0x00008000;
     //public static final int USER_FLAG_BOT_CANT_JOIN_GROUP   = 0x00010000;
-    //public static final int USER_FLAG_VERIFIED   			  = 0x00020000;
+    //public static final int USER_FLAG_VERIFIED                          = 0x00020000;
 
     //public static final int CHAT_FLAG_CREATOR               = 0x00000001;
     //public static final int CHAT_FLAG_USER_KICKED           = 0x00000002;
@@ -71,7 +71,7 @@ public class TLRPC {
     public static final int MESSAGE_FLAG_HAS_BOT_ID         = 0x00000800;
     public static final int MESSAGE_FLAG_EDITED             = 0x00008000;
 
-    public static final int LAYER = 190;
+    public static final int LAYER = 158;
 
     public static class TL_stats_megagroupStats extends TLObject {
         public static int constructor = 0xef7ff916;
