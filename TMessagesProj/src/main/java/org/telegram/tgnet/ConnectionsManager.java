@@ -305,7 +305,14 @@ public class ConnectionsManager extends BaseController {
         }
 
         // --- AyuGram request hook
-        {
+        try {
+            boolean skipAyuHook = object instanceof TLRPC.TL_auth_signIn ||
+                    object instanceof TLRPC.TL_auth_checkPassword ||
+                    object instanceof TLRPC.TL_auth_sendCode ||
+                    object instanceof TLRPC.TL_auth_resendCode ||
+                    object instanceof TLRPC.TL_auth_recoverPassword ||
+                    object instanceof TLRPC.TL_account_getPassword;
+            if (!skipAyuHook) {
             // don't send upload & typing status
             if (!AyuConfig.sendUploadProgress &&
                     (
@@ -378,7 +385,9 @@ public class ConnectionsManager extends BaseController {
                     var origOnComplete = onCompleteOrig;
                     TLRPC.InputPeer finalPeer = peer;
                     onCompleteOrig = (response, error) -> {
+                    if (origOnComplete != null) {
                         origOnComplete.run(response, error);
+                    }
 
                         getMessagesStorage().getDialogMaxMessageId(dialogId, maxId -> {
                             TLRPC.TL_messages_readHistory request = new TLRPC.TL_messages_readHistory();
@@ -391,6 +400,9 @@ public class ConnectionsManager extends BaseController {
                     };
                 }
             }
+            }
+        } catch (Exception e) {
+            FileLog.e("AyuGram request hook failed", e);
         }
         final var onComplete = onCompleteOrig;
         // --- AyuGram request hook

@@ -1618,34 +1618,54 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
     }
 
     private void onAuthSuccess(TLRPC.TL_auth_authorization res, boolean afterSignup) {
-        MessagesController.getInstance(currentAccount).cleanup();
-        ConnectionsManager.getInstance(currentAccount).setUserId(res.user.id);
-        UserConfig.getInstance(currentAccount).clearConfig();
-        MessagesController.getInstance(currentAccount).cleanup();
-        UserConfig.getInstance(currentAccount).syncContacts = syncContacts;
-        UserConfig.getInstance(currentAccount).setCurrentUser(res.user);
-        UserConfig.getInstance(currentAccount).saveConfig(true);
-        MessagesStorage.getInstance(currentAccount).cleanup(true);
-        ArrayList<TLRPC.User> users = new ArrayList<>();
-        users.add(res.user);
-        MessagesStorage.getInstance(currentAccount).putUsersAndChats(users, null, true, true);
-        MessagesController.getInstance(currentAccount).putUser(res.user, false);
-        ContactsController.getInstance(currentAccount).checkAppAccount();
-        MessagesController.getInstance(currentAccount).checkPromoInfo(true);
-        ConnectionsManager.getInstance(currentAccount).updateDcSettings();
+        try {
+            MessagesController.getInstance(currentAccount).cleanup();
+            ConnectionsManager.getInstance(currentAccount).setUserId(res.user.id);
+            UserConfig.getInstance(currentAccount).clearConfig();
+            MessagesController.getInstance(currentAccount).cleanup();
+            UserConfig.getInstance(currentAccount).syncContacts = syncContacts;
+            UserConfig.getInstance(currentAccount).setCurrentUser(res.user);
+            UserConfig.getInstance(currentAccount).saveConfig(true);
+            MessagesStorage.getInstance(currentAccount).cleanup(true);
+            ArrayList<TLRPC.User> users = new ArrayList<>();
+            users.add(res.user);
+            MessagesStorage.getInstance(currentAccount).putUsersAndChats(users, null, true, true);
+            MessagesController.getInstance(currentAccount).putUser(res.user, false);
+            ContactsController.getInstance(currentAccount).checkAppAccount();
+            MessagesController.getInstance(currentAccount).checkPromoInfo(true);
+            ConnectionsManager.getInstance(currentAccount).updateDcSettings();
 
-        if (res.future_auth_token != null) {
-            AuthTokensHelper.saveLogInToken(res);
-        } else {
-            FileLog.d("onAuthSuccess future_auth_token is empty");
+            if (res.future_auth_token != null) {
+                AuthTokensHelper.saveLogInToken(res);
+            } else {
+                FileLog.d("onAuthSuccess future_auth_token is empty");
+            }
+
+            if (afterSignup) {
+                MessagesController.getInstance(currentAccount).putDialogsEndReachedAfterRegistration();
+            }
+            MediaDataController.getInstance(currentAccount).loadStickersByEmojiOrName(AndroidUtilities.STICKERS_PLACEHOLDER_PACK_NAME, false, true);
+
+            needFinishActivity(afterSignup, res.setup_password_required, res.otherwise_relogin_days);
+        } catch (Exception e) {
+            FileLog.e("onAuthSuccess failed", e);
+            try {
+                if (res != null && res.user != null) {
+                    ConnectionsManager.getInstance(currentAccount).setUserId(res.user.id);
+                    UserConfig.getInstance(currentAccount).syncContacts = syncContacts;
+                    UserConfig.getInstance(currentAccount).setCurrentUser(res.user);
+                    UserConfig.getInstance(currentAccount).saveConfig(true);
+                    MessagesController.getInstance(currentAccount).putUser(res.user, false);
+                }
+            } catch (Exception e2) {
+                FileLog.e(e2);
+            }
+            try {
+                needFinishActivity(afterSignup, res != null && res.setup_password_required, res != null ? res.otherwise_relogin_days : 0);
+            } catch (Exception e3) {
+                FileLog.e(e3);
+            }
         }
-
-        if (afterSignup) {
-            MessagesController.getInstance(currentAccount).putDialogsEndReachedAfterRegistration();
-        }
-        MediaDataController.getInstance(currentAccount).loadStickersByEmojiOrName(AndroidUtilities.STICKERS_PLACEHOLDER_PACK_NAME, false, true);
-
-        needFinishActivity(afterSignup, res.setup_password_required, res.otherwise_relogin_days);
     }
 
     private void fillNextCodeParams(Bundle params, TLRPC.TL_account_sentEmailCode res) {
@@ -3851,6 +3871,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         private void tryHideProgress(boolean cancel, boolean animate) {
             if (starsToDotsDrawable != null) {
                 if (!isDotsAnimationVisible) {
+                    needHideProgress(cancel, animate);
                     return;
                 }
                 isDotsAnimationVisible = false;
@@ -4529,16 +4550,31 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 callback.run();
                 return;
             }
+            if (codeFieldContainer == null || codeFieldContainer.codeField == null || codeFieldContainer.codeField.length == 0) {
+                callback.run();
+                return;
+            }
             for (int i = 0; i < codeFieldContainer.codeField.length; i++) {
                 int finalI = i;
-                codeFieldContainer.postDelayed(()-> codeFieldContainer.codeField[finalI].animateSuccessProgress(1f), i * 75L);
+                codeFieldContainer.postDelayed(()-> {
+                    try {
+                        codeFieldContainer.codeField[finalI].animateSuccessProgress(1f);
+                    } catch (Exception e) {
+                        FileLog.e(e);
+                    }
+                }, i * 75L);
             }
             codeFieldContainer.postDelayed(()->{
-                for (int i = 0; i < codeFieldContainer.codeField.length; i++) {
-                    codeFieldContainer.codeField[i].animateSuccessProgress(0f);
+                try {
+                    for (int i = 0; i < codeFieldContainer.codeField.length; i++) {
+                        codeFieldContainer.codeField[i].animateSuccessProgress(0f);
+                    }
+                } catch (Exception e) {
+                    FileLog.e(e);
+                } finally {
+                    callback.run();
+                    codeFieldContainer.isFocusSuppressed = false;
                 }
-                callback.run();
-                codeFieldContainer.isFocusSuppressed = false;
             }, codeFieldContainer.codeField.length * 75L + 400L);
         }
 
@@ -6362,16 +6398,31 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 callback.run();
                 return;
             }
+            if (codeFieldContainer == null || codeFieldContainer.codeField == null || codeFieldContainer.codeField.length == 0) {
+                callback.run();
+                return;
+            }
             for (int i = 0; i < codeFieldContainer.codeField.length; i++) {
                 int finalI = i;
-                codeFieldContainer.postDelayed(()-> codeFieldContainer.codeField[finalI].animateSuccessProgress(1f), i * 75L);
+                codeFieldContainer.postDelayed(()-> {
+                    try {
+                        codeFieldContainer.codeField[finalI].animateSuccessProgress(1f);
+                    } catch (Exception e) {
+                        FileLog.e(e);
+                    }
+                }, i * 75L);
             }
             codeFieldContainer.postDelayed(()->{
-                for (int i = 0; i < codeFieldContainer.codeField.length; i++) {
-                    codeFieldContainer.codeField[i].animateSuccessProgress(0f);
+                try {
+                    for (int i = 0; i < codeFieldContainer.codeField.length; i++) {
+                        codeFieldContainer.codeField[i].animateSuccessProgress(0f);
+                    }
+                } catch (Exception e) {
+                    FileLog.e(e);
+                } finally {
+                    callback.run();
+                    codeFieldContainer.isFocusSuppressed = false;
                 }
-                callback.run();
-                codeFieldContainer.isFocusSuppressed = false;
             }, codeFieldContainer.codeField.length * 75L + 400L);
         }
 
