@@ -68342,44 +68342,60 @@ public class TLRPC {
         public long stars;
         public int until_date;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            only_new_subscribers = hasFlag(flags, FLAG_0);
-            winners_are_visible = hasFlag(flags, FLAG_2);
-            channels = Vector.deserializeLong(stream, exception);
-            if (hasFlag(flags, FLAG_1)) {
-                countries_iso2 = Vector.deserializeString(stream, exception);
+            only_new_subscribers = (flags & 1) != 0;
+            winners_are_visible = (flags & 4) != 0;
+            int magic = stream.readInt32(exception);
+            int count = stream.readInt32(exception);
+            for (int a = 0; a < count; a++) {
+                channels.add(stream.readInt64(exception));
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 2) != 0) {
+                magic = stream.readInt32(exception);
+                count = stream.readInt32(exception);
+                for (int a = 0; a < count; a++) {
+                    countries_iso2.add(stream.readString(exception));
+                }
+            }
+            if ((flags & 8) != 0) {
                 prize_description = stream.readString(exception);
             }
             quantity = stream.readInt32(exception);
-            if (hasFlag(flags, FLAG_4)) {
+            if ((flags & 16) != 0) {
                 months = stream.readInt32(exception);
             }
-            if (hasFlag(flags, FLAG_5)) {
+            if ((flags & 32) != 0) {
                 stars = stream.readInt64(exception);
             }
             until_date = stream.readInt32(exception);
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, only_new_subscribers);
-            flags = setFlag(flags, FLAG_2, winners_are_visible);
+            flags = only_new_subscribers ? (flags | 1) : (flags &~ 1);
+            flags = winners_are_visible ? (flags | 4) : (flags &~ 4);
             stream.writeInt32(flags);
-            Vector.serializeLong(stream, channels);
-            if (hasFlag(flags, FLAG_1)) {
-                Vector.serializeString(stream, countries_iso2);
+            stream.writeInt32(0x1cb5c415);
+            stream.writeInt32(channels.size());
+            for (int a = 0; a < channels.size(); a++) {
+                stream.writeInt64(channels.get(a));
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 2) != 0) {
+                stream.writeInt32(0x1cb5c415);
+                stream.writeInt32(countries_iso2.size());
+                for (int a = 0; a < countries_iso2.size(); a++) {
+                    stream.writeString(countries_iso2.get(a));
+                }
+            }
+            if ((flags & 8) != 0) {
                 stream.writeString(prize_description);
             }
             stream.writeInt32(quantity);
-            if (hasFlag(flags, FLAG_4)) {
+            if ((flags & 16) != 0) {
                 stream.writeInt32(months);
             }
-            if (hasFlag(flags, FLAG_5)) {
+            if ((flags & 32) != 0) {
                 stream.writeInt64(stars);
             }
             stream.writeInt32(until_date);
@@ -68390,15 +68406,23 @@ public class TLRPC {
     public static class TL_messageMediaGiveaway_layer186 extends TL_messageMediaGiveaway {
         public static final int constructor = 0xdaad85b0;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            only_new_subscribers = hasFlag(flags, FLAG_0);
-            winners_are_visible = hasFlag(flags, FLAG_2);
-            channels = Vector.deserializeLong(stream, exception);
-            if (hasFlag(flags, FLAG_1)) {
-                countries_iso2 = Vector.deserializeString(stream, exception);
+            only_new_subscribers = (flags & 1) != 0;
+            winners_are_visible = (flags & 4) != 0;
+            int magic = stream.readInt32(exception);
+            int count = stream.readInt32(exception);
+            for (int a = 0; a < count; a++) {
+                channels.add(stream.readInt64(exception));
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 2) != 0) {
+                magic = stream.readInt32(exception);
+                count = stream.readInt32(exception);
+                for (int a = 0; a < count; a++) {
+                    countries_iso2.add(stream.readString(exception));
+                }
+            }
+            if ((flags & 8) != 0) {
                 prize_description = stream.readString(exception);
             }
             quantity = stream.readInt32(exception);
@@ -68406,16 +68430,24 @@ public class TLRPC {
             until_date = stream.readInt32(exception);
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, only_new_subscribers);
-            flags = setFlag(flags, FLAG_2, winners_are_visible);
+            flags = only_new_subscribers ? (flags | 1) : (flags &~ 1);
+            flags = winners_are_visible ? (flags | 4) : (flags &~ 4);
             stream.writeInt32(flags);
-            Vector.serializeLong(stream, channels);
-            if (hasFlag(flags, FLAG_1)) {
-                Vector.serializeString(stream, countries_iso2);
+            stream.writeInt32(0x1cb5c415);
+            stream.writeInt32(channels.size());
+            for (int a = 0; a < channels.size(); a++) {
+                stream.writeInt64(channels.get(a));
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 2) != 0) {
+                stream.writeInt32(0x1cb5c415);
+                stream.writeInt32(countries_iso2.size());
+                for (int a = 0; a < countries_iso2.size(); a++) {
+                    stream.writeString(countries_iso2.get(a));
+                }
+            }
+            if ((flags & 8) != 0) {
                 stream.writeString(prize_description);
             }
             stream.writeInt32(quantity);
@@ -68428,25 +68460,47 @@ public class TLRPC {
     public static class TL_messageMediaGiveaway_layer167 extends TL_messageMediaGiveaway {
         public static final int constructor = 0x58260664;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            only_new_subscribers = hasFlag(flags, FLAG_0);
-            channels = Vector.deserializeLong(stream, exception);
-            if (hasFlag(flags, FLAG_1)) {
-                countries_iso2 = Vector.deserializeString(stream, exception);
+            only_new_subscribers = (flags & 1) != 0;
+            int magic = stream.readInt32(exception);
+            int count = stream.readInt32(exception);
+            for (int a = 0; a < count; a++) {
+                channels.add(stream.readInt64(exception));
+            }
+            if ((flags & 2) != 0) {
+                magic = stream.readInt32(exception);
+                count = stream.readInt32(exception);
+                for (int a = 0; a < count; a++) {
+                    countries_iso2.add(stream.readString(exception));
+                }
+            }
+            if ((flags & 4) != 0) {
+                prize_description = stream.readString(exception);
             }
             quantity = stream.readInt32(exception);
             months = stream.readInt32(exception);
             until_date = stream.readInt32(exception);
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, only_new_subscribers);
+            flags = only_new_subscribers ? (flags | 1) : (flags &~ 1);
             stream.writeInt32(flags);
-            Vector.serializeLong(stream, channels);
-            if (hasFlag(flags, FLAG_1)) {
-                Vector.serializeString(stream, countries_iso2);
+            stream.writeInt32(0x1cb5c415);
+            stream.writeInt32(channels.size());
+            for (int a = 0; a < channels.size(); a++) {
+                stream.writeInt64(channels.get(a));
+            }
+            if ((flags & 2) != 0) {
+                stream.writeInt32(0x1cb5c415);
+                stream.writeInt32(countries_iso2.size());
+                for (int a = 0; a < countries_iso2.size(); a++) {
+                    stream.writeString(countries_iso2.get(a));
+                }
+            }
+            if ((flags & 4) != 0) {
+                stream.writeString(prize_description);
             }
             stream.writeInt32(quantity);
             stream.writeInt32(months);
@@ -68454,67 +68508,75 @@ public class TLRPC {
         }
     }
 
-    // === ADDED: TL_messageMediaGiveawayResults ===
+        // === ADDED: TL_messageMediaGiveawayResults ===
     public static class TL_messageMediaGiveawayResults extends MessageMedia {
         public static final int constructor = 0xceaa3ea1;
 
         public boolean only_new_subscribers;
         public boolean refunded;
-        public long channel_id;
+        public long channel_id_giveaway;
         public int additional_peers_count;
         public int launch_msg_id;
         public int winners_count;
         public int unclaimed_count;
         public ArrayList<Long> winners = new ArrayList<>();
         public int months;
-        public long stars;
+        public long giveaway_stars;
         public String prize_description;
         public int until_date;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            only_new_subscribers = hasFlag(flags, FLAG_0);
-            refunded = hasFlag(flags, FLAG_2);
-            channel_id = stream.readInt64(exception);
-            if (hasFlag(flags, FLAG_3)) {
+            only_new_subscribers = (flags & 1) != 0;
+            refunded = (flags & 4) != 0;
+            channel_id_giveaway = stream.readInt64(exception);
+            if ((flags & 8) != 0) {
                 additional_peers_count = stream.readInt32(exception);
             }
             launch_msg_id = stream.readInt32(exception);
             winners_count = stream.readInt32(exception);
             unclaimed_count = stream.readInt32(exception);
-            winners = Vector.deserializeLong(stream, exception);
-            if (hasFlag(flags, FLAG_4)) {
+            int magic = stream.readInt32(exception);
+            int count = stream.readInt32(exception);
+            for (int a = 0; a < count; a++) {
+                winners.add(stream.readInt64(exception));
+            }
+            if ((flags & 16) != 0) {
                 months = stream.readInt32(exception);
             }
-            if (hasFlag(flags, FLAG_5)) {
-                stars = stream.readInt64(exception);
+            if ((flags & 32) != 0) {
+                giveaway_stars = stream.readInt64(exception);
             }
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 prize_description = stream.readString(exception);
             }
             until_date = stream.readInt32(exception);
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, only_new_subscribers);
-            flags = setFlag(flags, FLAG_2, refunded);
+            flags = only_new_subscribers ? (flags | 1) : (flags &~ 1);
+            flags = refunded ? (flags | 4) : (flags &~ 4);
             stream.writeInt32(flags);
-            stream.writeInt64(channel_id);
-            if (hasFlag(flags, FLAG_3)) {
+            stream.writeInt64(channel_id_giveaway);
+            if ((flags & 8) != 0) {
                 stream.writeInt32(additional_peers_count);
             }
             stream.writeInt32(launch_msg_id);
             stream.writeInt32(winners_count);
             stream.writeInt32(unclaimed_count);
-            Vector.serializeLong(stream, winners);
-            if (hasFlag(flags, FLAG_4)) {
+            stream.writeInt32(0x1cb5c415);
+            stream.writeInt32(winners.size());
+            for (int a = 0; a < winners.size(); a++) {
+                stream.writeInt64(winners.get(a));
+            }
+            if ((flags & 16) != 0) {
                 stream.writeInt32(months);
             }
-            if (hasFlag(flags, FLAG_5)) {
-                stream.writeInt64(stars);
+            if ((flags & 32) != 0) {
+                stream.writeInt64(giveaway_stars);
             }
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 stream.writeString(prize_description);
             }
             stream.writeInt32(until_date);
@@ -68525,40 +68587,48 @@ public class TLRPC {
     public static class TL_messageMediaGiveawayResults_layer186 extends TL_messageMediaGiveawayResults {
         public static final int constructor = 0xc6991068;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            only_new_subscribers = hasFlag(flags, FLAG_0);
-            refunded = hasFlag(flags, FLAG_2);
-            channel_id = stream.readInt64(exception);
-            if (hasFlag(flags, FLAG_3)) {
+            only_new_subscribers = (flags & 1) != 0;
+            refunded = (flags & 4) != 0;
+            channel_id_giveaway = stream.readInt64(exception);
+            if ((flags & 8) != 0) {
                 additional_peers_count = stream.readInt32(exception);
             }
             launch_msg_id = stream.readInt32(exception);
             winners_count = stream.readInt32(exception);
             unclaimed_count = stream.readInt32(exception);
-            winners = Vector.deserializeLong(stream, exception);
+            int magic = stream.readInt32(exception);
+            int count = stream.readInt32(exception);
+            for (int a = 0; a < count; a++) {
+                winners.add(stream.readInt64(exception));
+            }
             months = stream.readInt32(exception);
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 prize_description = stream.readString(exception);
             }
             until_date = stream.readInt32(exception);
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, only_new_subscribers);
-            flags = setFlag(flags, FLAG_2, refunded);
+            flags = only_new_subscribers ? (flags | 1) : (flags &~ 1);
+            flags = refunded ? (flags | 4) : (flags &~ 4);
             stream.writeInt32(flags);
-            stream.writeInt64(channel_id);
-            if (hasFlag(flags, FLAG_3)) {
+            stream.writeInt64(channel_id_giveaway);
+            if ((flags & 8) != 0) {
                 stream.writeInt32(additional_peers_count);
             }
             stream.writeInt32(launch_msg_id);
             stream.writeInt32(winners_count);
             stream.writeInt32(unclaimed_count);
-            Vector.serializeLong(stream, winners);
+            stream.writeInt32(0x1cb5c415);
+            stream.writeInt32(winners.size());
+            for (int a = 0; a < winners.size(); a++) {
+                stream.writeInt64(winners.get(a));
+            }
             stream.writeInt32(months);
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 stream.writeString(prize_description);
             }
             stream.writeInt32(until_date);
@@ -68569,15 +68639,29 @@ public class TLRPC {
     public static class TL_messageMediaPaidMedia extends MessageMedia {
         public static final int constructor = 0xa8852491;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public long stars_amount;
+        public ArrayList<MessageExtendedMedia> paid_media = new ArrayList<>();
+
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             stars_amount = stream.readInt64(exception);
-            extended_media = Vector.deserialize(stream, MessageExtendedMedia::TLdeserialize, exception);
+            int magic = stream.readInt32(exception);
+            int count = stream.readInt32(exception);
+            for (int a = 0; a < count; a++) {
+                MessageExtendedMedia object = MessageExtendedMedia.TLdeserialize(stream, stream.readInt32(exception), exception);
+                if (object != null) {
+                    paid_media.add(object);
+                }
+            }
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
             stream.writeInt64(stars_amount);
-            Vector.serialize(stream, extended_media);
+            stream.writeInt32(0x1cb5c415);
+            stream.writeInt32(paid_media.size());
+            for (int a = 0; a < paid_media.size(); a++) {
+                paid_media.get(a).serializeToStream(stream);
+            }
         }
     }
 
@@ -68588,52 +68672,53 @@ public class TLRPC {
         public boolean via_giveaway;
         public boolean unclaimed;
         public Peer boost_peer;
+        public int days;
         public String slug;
-        public TL_textWithEntities message;
+        public TL_textWithEntities giftMessage;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            via_giveaway = hasFlag(flags, FLAG_0);
-            unclaimed = hasFlag(flags, FLAG_5);
-            if (hasFlag(flags, FLAG_1)) {
+            via_giveaway = (flags & 1) != 0;
+            unclaimed = (flags & 32) != 0;
+            if ((flags & 2) != 0) {
                 boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
             }
             days = stream.readInt32(exception);
             months = (int) Math.round(days / 30.0f);
             slug = stream.readString(exception);
-            if (hasFlag(flags, FLAG_2)) {
+            if ((flags & 4) != 0) {
                 currency = stream.readString(exception);
                 amount = stream.readInt64(exception);
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 8) != 0) {
                 cryptoCurrency = stream.readString(exception);
                 cryptoAmount = stream.readInt64(exception);
             }
-            if (hasFlag(flags, FLAG_4)) {
-                message = TL_textWithEntities.TLdeserialize(stream, stream.readInt32(exception), exception);
+            if ((flags & 16) != 0) {
+                giftMessage = TL_textWithEntities.TLdeserialize(stream, stream.readInt32(exception), exception);
             }
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, via_giveaway);
-            flags = setFlag(flags, FLAG_5, unclaimed);
+            flags = via_giveaway ? (flags | 1) : (flags &~ 1);
+            flags = unclaimed ? (flags | 32) : (flags &~ 32);
             stream.writeInt32(flags);
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 boost_peer.serializeToStream(stream);
             }
             stream.writeInt32(days);
             stream.writeString(slug);
-            if (hasFlag(flags, FLAG_2)) {
+            if ((flags & 4) != 0) {
                 stream.writeString(currency);
                 stream.writeInt64(amount);
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 8) != 0) {
                 stream.writeString(cryptoCurrency);
                 stream.writeInt64(cryptoAmount);
             }
-            if (hasFlag(flags, FLAG_4)) {
-                message.serializeToStream(stream);
+            if ((flags & 16) != 0) {
+                giftMessage.serializeToStream(stream);
             }
         }
     }
@@ -68642,49 +68727,43 @@ public class TLRPC {
     public static class TL_messageActionGiftCode_layer216 extends TL_messageActionGiftCode {
         public static final int constructor = 0x56d03994;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            via_giveaway = hasFlag(flags, FLAG_0);
-            unclaimed = hasFlag(flags, FLAG_5);
-            if (hasFlag(flags, FLAG_1)) {
+            via_giveaway = (flags & 1) != 0;
+            unclaimed = (flags & 32) != 0;
+            if ((flags & 2) != 0) {
                 boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
             }
             months = stream.readInt32(exception);
             days = months * 30;
             slug = stream.readString(exception);
-            if (hasFlag(flags, FLAG_2)) {
+            if ((flags & 4) != 0) {
                 currency = stream.readString(exception);
                 amount = stream.readInt64(exception);
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 8) != 0) {
                 cryptoCurrency = stream.readString(exception);
                 cryptoAmount = stream.readInt64(exception);
             }
-            if (hasFlag(flags, FLAG_4)) {
-                message = TL_textWithEntities.TLdeserialize(stream, stream.readInt32(exception), exception);
-            }
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, via_giveaway);
-            flags = setFlag(flags, FLAG_5, unclaimed);
+            flags = via_giveaway ? (flags | 1) : (flags &~ 1);
+            flags = unclaimed ? (flags | 32) : (flags &~ 32);
             stream.writeInt32(flags);
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 boost_peer.serializeToStream(stream);
             }
             stream.writeInt32(months);
             stream.writeString(slug);
-            if (hasFlag(flags, FLAG_2)) {
+            if ((flags & 4) != 0) {
                 stream.writeString(currency);
                 stream.writeInt64(amount);
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 8) != 0) {
                 stream.writeString(cryptoCurrency);
                 stream.writeInt64(cryptoAmount);
-            }
-            if (hasFlag(flags, FLAG_4)) {
-                message.serializeToStream(stream);
             }
         }
     }
@@ -68693,50 +68772,42 @@ public class TLRPC {
     public static class TL_messageActionGiftCode_layer189 extends TL_messageActionGiftCode {
         public static final int constructor = 0x678c2e09;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            via_giveaway = hasFlag(flags, FLAG_0);
-            unclaimed = hasFlag(flags, FLAG_2);
-            if (hasFlag(flags, FLAG_1)) {
+            via_giveaway = (flags & 1) != 0;
+            unclaimed = (flags & 32) != 0;
+            if ((flags & 2) != 0) {
                 boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
             }
             months = stream.readInt32(exception);
             days = months * 30;
             slug = stream.readString(exception);
-            if (hasFlag(flags, FLAG_2)) {
+            if ((flags & 4) != 0) {
                 currency = stream.readString(exception);
-            }
-            if (hasFlag(flags, FLAG_2)) {
                 amount = stream.readInt64(exception);
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 8) != 0) {
                 cryptoCurrency = stream.readString(exception);
-            }
-            if (hasFlag(flags, FLAG_3)) {
                 cryptoAmount = stream.readInt64(exception);
             }
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, via_giveaway);
-            flags = setFlag(flags, FLAG_2, unclaimed);
+            flags = via_giveaway ? (flags | 1) : (flags &~ 1);
+            flags = unclaimed ? (flags | 32) : (flags &~ 32);
             stream.writeInt32(flags);
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 boost_peer.serializeToStream(stream);
             }
             stream.writeInt32(months);
             stream.writeString(slug);
-            if (hasFlag(flags, FLAG_2)) {
+            if ((flags & 4) != 0) {
                 stream.writeString(currency);
-            }
-            if (hasFlag(flags, FLAG_2)) {
                 stream.writeInt64(amount);
             }
-            if (hasFlag(flags, FLAG_3)) {
+            if ((flags & 8) != 0) {
                 stream.writeString(cryptoCurrency);
-            }
-            if (hasFlag(flags, FLAG_3)) {
                 stream.writeInt64(cryptoAmount);
             }
         }
@@ -68746,11 +68817,11 @@ public class TLRPC {
     public static class TL_messageActionGiftCode_layer167 extends TL_messageActionGiftCode {
         public static final int constructor = 0xd2cfdb0e;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            via_giveaway = hasFlag(flags, FLAG_0);
-            unclaimed = hasFlag(flags, FLAG_2);
-            if (hasFlag(flags, FLAG_1)) {
+            via_giveaway = (flags & 1) != 0;
+            unclaimed = (flags & 4) != 0;
+            if ((flags & 2) != 0) {
                 boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
             }
             months = stream.readInt32(exception);
@@ -68758,12 +68829,12 @@ public class TLRPC {
             slug = stream.readString(exception);
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, via_giveaway);
-            flags = setFlag(flags, FLAG_2, unclaimed);
+            flags = via_giveaway ? (flags | 1) : (flags &~ 1);
+            flags = unclaimed ? (flags | 4) : (flags &~ 4);
             stream.writeInt32(flags);
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 boost_peer.serializeToStream(stream);
             }
             stream.writeInt32(months);
@@ -68776,34 +68847,33 @@ public class TLRPC {
         public static final int constructor = 0x45d5b021;
 
         public long stars;
-        public TL_paymentCharge charge;
         public String transaction_id;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
             currency = stream.readString(exception);
             amount = stream.readInt64(exception);
             stars = stream.readInt64(exception);
-            if (hasFlag(flags, FLAG_0)) {
+            if ((flags & 1) != 0) {
                 cryptoCurrency = stream.readString(exception);
                 cryptoAmount = stream.readInt64(exception);
             }
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 transaction_id = stream.readString(exception);
             }
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
             stream.writeInt32(flags);
             stream.writeString(currency);
             stream.writeInt64(amount);
             stream.writeInt64(stars);
-            if (hasFlag(flags, FLAG_0)) {
+            if ((flags & 1) != 0) {
                 stream.writeString(cryptoCurrency);
                 stream.writeInt64(cryptoAmount);
             }
-            if (hasFlag(flags, FLAG_1)) {
+            if ((flags & 2) != 0) {
                 stream.writeString(transaction_id);
             }
         }
@@ -68813,29 +68883,26 @@ public class TLRPC {
     public static class TL_messageActionPrizeStars extends MessageAction {
         public static final int constructor = 0xb00c47a2;
 
-        public int flags;
-        public boolean via_giveaway;
         public boolean unclaimed;
-        public long stars;
+        public long prize_stars;
         public String transaction_id;
         public Peer boost_peer;
         public int giveaway_msg_id;
 
-        @Override
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
-            unclaimed = hasFlag(flags, FLAG_0);
-            stars = stream.readInt64(exception);
+            unclaimed = (flags & 1) != 0;
+            prize_stars = stream.readInt64(exception);
             transaction_id = stream.readString(exception);
             boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
             giveaway_msg_id = stream.readInt32(exception);
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
-            flags = setFlag(flags, FLAG_0, unclaimed);
+            flags = unclaimed ? (flags | 1) : (flags &~ 1);
             stream.writeInt32(flags);
-            stream.writeInt64(stars);
+            stream.writeInt64(prize_stars);
             stream.writeString(transaction_id);
             boost_peer.serializeToStream(stream);
             stream.writeInt32(giveaway_msg_id);
@@ -68848,30 +68915,29 @@ public class TLRPC {
 
         public String transaction_id;
 
-        public void readParams(InputSerializedData stream, boolean exception) {
+        public void readParams(AbstractSerializedData stream, boolean exception) {
             flags = stream.readInt32(exception);
             currency = stream.readString(exception);
             amount = stream.readInt64(exception);
             cryptoCurrency = stream.readString(exception);
             cryptoAmount = stream.readInt64(exception);
-            if (hasFlag(flags, FLAG_0)) {
+            if ((flags & 1) != 0) {
                 transaction_id = stream.readString(exception);
             }
         }
 
-        public void serializeToStream(OutputSerializedData stream) {
+        public void serializeToStream(AbstractSerializedData stream) {
             stream.writeInt32(constructor);
             stream.writeInt32(flags);
             stream.writeString(currency);
             stream.writeInt64(amount);
             stream.writeString(cryptoCurrency);
             stream.writeInt64(cryptoAmount);
-            if (hasFlag(flags, FLAG_0)) {
+            if ((flags & 1) != 0) {
                 stream.writeString(transaction_id);
             }
         }
     }
-
     //functions
 
     public static class Vector extends TLObject {
