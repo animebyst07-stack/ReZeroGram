@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.ZeroGram.ReZeroGram.preferences.components.HeaderSettingsCell;
+import com.ZeroGram.ReZeroGram.components.IconSelectorAlert;
 import com.ZeroGram.ReZeroGram.preferences.updater.UpdaterBottomSheet;
 
 import org.telegram.messenger.AndroidUtilities;
@@ -54,6 +55,7 @@ public class MainPreferencesActivity extends BasePreferencesActivity {
     private int chatsRow;
     private int otherRow;
     private int groqRow;
+    private int appIconRow;
 
     private int categoryDividerRow;
     private int aboutExteraDividerRow;
@@ -200,6 +202,7 @@ public class MainPreferencesActivity extends BasePreferencesActivity {
         chatsRow = newRow();
         otherRow = newRow();
         groqRow = newRow();
+        appIconRow = newRow();
         categoryDividerRow = newRow();
 
         infoHeaderRow = newRow();
@@ -233,6 +236,8 @@ public class MainPreferencesActivity extends BasePreferencesActivity {
             presentFragment(new GeneralPreferencesActivity());
         } else if (position == groqRow) {
             presentFragment(new GroqPreferencesActivity());
+        } else if (position == appIconRow) {
+            IconSelectorAlert.show(this, getFragmentView(), null, null);
         }
     }
 
@@ -279,7 +284,9 @@ public class MainPreferencesActivity extends BasePreferencesActivity {
                     } else if (position == otherRow) {
                         textCell.setTextAndIcon(LocaleController.getString("LocalOther", R.string.LocalOther), R.drawable.msg_fave, true);
                     } else if (position == groqRow) {
-                        textCell.setTextAndIcon("Groq AI", R.drawable.msg_translate, false);
+                        textCell.setTextAndIcon("Groq AI", R.drawable.msg_translate, true);
+                    } else if (position == appIconRow) {
+                        textCell.setTextAndIcon(LocaleController.getString("AppIcon", R.string.AppIcon), R.drawable.msg_theme, false);
                     } else if (position == channelRow) {
                         textCell.setTextAndValueAndIcon(LocaleController.getString("Channel", R.string.Channel), "@zerogram_official", R.drawable.msg_channel, true);
                     } else if (position == groupRow) {

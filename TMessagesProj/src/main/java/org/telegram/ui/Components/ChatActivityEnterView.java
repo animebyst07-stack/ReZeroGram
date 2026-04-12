@@ -2058,7 +2058,7 @@ public class ChatActivityEnterView extends BlurredFrameLayout implements Notific
             groqInputButton.setBackground(Theme.createSelectorDrawable(getThemedColor(Theme.key_listSelector)));
             groqInputButton.setContentDescription("Groq AI");
             groqInputButton.setVisibility(GONE);
-            attachLayout.addView(groqInputButton, 0, LayoutHelper.createLinear(48, 48));
+            messageEditTextContainer.addView(groqInputButton, LayoutHelper.createFrame(48, 48, Gravity.BOTTOM | Gravity.RIGHT));
             groqInputButton.setOnClickListener(v -> {
                 if (groqTextReplaced && groqOriginalText != null) {
                     messageEditText.setText(groqOriginalText);

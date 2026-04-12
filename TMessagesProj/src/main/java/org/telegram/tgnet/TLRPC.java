@@ -71,7 +71,7 @@ public class TLRPC {
     public static final int MESSAGE_FLAG_HAS_BOT_ID         = 0x00000800;
     public static final int MESSAGE_FLAG_EDITED             = 0x00008000;
 
-    public static final int LAYER = 158;
+    public static final int LAYER = 190;
 
     public static class TL_stats_megagroupStats extends TLObject {
         public static int constructor = 0xef7ff916;
@@ -25179,6 +25179,27 @@ public class TLRPC {
                     break;
                 case 0xfe77345d:
                     result = new TL_messageActionRequestedPeer();
+                    break;
+                case 0x31c48347:
+                    result = new TL_messageActionGiftCode();
+                    break;
+                case 0x56d03994:
+                    result = new TL_messageActionGiftCode_layer216();
+                    break;
+                case 0x678c2e09:
+                    result = new TL_messageActionGiftCode_layer189();
+                    break;
+                case 0xd2cfdb0e:
+                    result = new TL_messageActionGiftCode_layer167();
+                    break;
+                case 0x45d5b021:
+                    result = new TL_messageActionGiftStars();
+                    break;
+                case 0xb00c47a2:
+                    result = new TL_messageActionPrizeStars();
+                    break;
+                case 0xa8a3c699:
+                    result = new TL_messageActionGiftTon();
                     break;
             }
             if (result == null && exception) {
@@ -60492,6 +60513,24 @@ public class TLRPC {
                 case 0x70322949:
                     result = new TL_messageMediaContact();
                     break;
+                case 0xaa073beb:
+                    result = new TL_messageMediaGiveaway();
+                    break;
+                case 0xdaad85b0:
+                    result = new TL_messageMediaGiveaway_layer186();
+                    break;
+                case 0x58260664:
+                    result = new TL_messageMediaGiveaway_layer167();
+                    break;
+                case 0xceaa3ea1:
+                    result = new TL_messageMediaGiveawayResults();
+                    break;
+                case 0xc6991068:
+                    result = new TL_messageMediaGiveawayResults_layer186();
+                    break;
+                case 0xa8852491:
+                    result = new TL_messageMediaPaidMedia();
+                    break;
             }
             if (result == null && exception) {
                 throw new RuntimeException(String.format("can't parse magic %x in MessageMedia", constructor));
@@ -68284,6 +68323,551 @@ public class TLRPC {
             }
             if ((flags & 2) != 0) {
                 stream.writeInt32(id);
+            }
+        }
+    }
+
+
+    // === ADDED: TL_messageMediaGiveaway ===
+    public static class TL_messageMediaGiveaway extends MessageMedia {
+        public static final int constructor = 0xaa073beb;
+
+        public boolean only_new_subscribers;
+        public boolean winners_are_visible;
+        public ArrayList<Long> channels = new ArrayList<>();
+        public ArrayList<String> countries_iso2 = new ArrayList<>();
+        public String prize_description;
+        public int quantity;
+        public int months;
+        public long stars;
+        public int until_date;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            only_new_subscribers = hasFlag(flags, FLAG_0);
+            winners_are_visible = hasFlag(flags, FLAG_2);
+            channels = Vector.deserializeLong(stream, exception);
+            if (hasFlag(flags, FLAG_1)) {
+                countries_iso2 = Vector.deserializeString(stream, exception);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                prize_description = stream.readString(exception);
+            }
+            quantity = stream.readInt32(exception);
+            if (hasFlag(flags, FLAG_4)) {
+                months = stream.readInt32(exception);
+            }
+            if (hasFlag(flags, FLAG_5)) {
+                stars = stream.readInt64(exception);
+            }
+            until_date = stream.readInt32(exception);
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, only_new_subscribers);
+            flags = setFlag(flags, FLAG_2, winners_are_visible);
+            stream.writeInt32(flags);
+            Vector.serializeLong(stream, channels);
+            if (hasFlag(flags, FLAG_1)) {
+                Vector.serializeString(stream, countries_iso2);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                stream.writeString(prize_description);
+            }
+            stream.writeInt32(quantity);
+            if (hasFlag(flags, FLAG_4)) {
+                stream.writeInt32(months);
+            }
+            if (hasFlag(flags, FLAG_5)) {
+                stream.writeInt64(stars);
+            }
+            stream.writeInt32(until_date);
+        }
+    }
+
+    // === ADDED: TL_messageMediaGiveaway_layer186 ===
+    public static class TL_messageMediaGiveaway_layer186 extends TL_messageMediaGiveaway {
+        public static final int constructor = 0xdaad85b0;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            only_new_subscribers = hasFlag(flags, FLAG_0);
+            winners_are_visible = hasFlag(flags, FLAG_2);
+            channels = Vector.deserializeLong(stream, exception);
+            if (hasFlag(flags, FLAG_1)) {
+                countries_iso2 = Vector.deserializeString(stream, exception);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                prize_description = stream.readString(exception);
+            }
+            quantity = stream.readInt32(exception);
+            months = stream.readInt32(exception);
+            until_date = stream.readInt32(exception);
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, only_new_subscribers);
+            flags = setFlag(flags, FLAG_2, winners_are_visible);
+            stream.writeInt32(flags);
+            Vector.serializeLong(stream, channels);
+            if (hasFlag(flags, FLAG_1)) {
+                Vector.serializeString(stream, countries_iso2);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                stream.writeString(prize_description);
+            }
+            stream.writeInt32(quantity);
+            stream.writeInt32(months);
+            stream.writeInt32(until_date);
+        }
+    }
+
+    // === ADDED: TL_messageMediaGiveaway_layer167 ===
+    public static class TL_messageMediaGiveaway_layer167 extends TL_messageMediaGiveaway {
+        public static final int constructor = 0x58260664;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            only_new_subscribers = hasFlag(flags, FLAG_0);
+            channels = Vector.deserializeLong(stream, exception);
+            if (hasFlag(flags, FLAG_1)) {
+                countries_iso2 = Vector.deserializeString(stream, exception);
+            }
+            quantity = stream.readInt32(exception);
+            months = stream.readInt32(exception);
+            until_date = stream.readInt32(exception);
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, only_new_subscribers);
+            stream.writeInt32(flags);
+            Vector.serializeLong(stream, channels);
+            if (hasFlag(flags, FLAG_1)) {
+                Vector.serializeString(stream, countries_iso2);
+            }
+            stream.writeInt32(quantity);
+            stream.writeInt32(months);
+            stream.writeInt32(until_date);
+        }
+    }
+
+    // === ADDED: TL_messageMediaGiveawayResults ===
+    public static class TL_messageMediaGiveawayResults extends MessageMedia {
+        public static final int constructor = 0xceaa3ea1;
+
+        public boolean only_new_subscribers;
+        public boolean refunded;
+        public long channel_id;
+        public int additional_peers_count;
+        public int launch_msg_id;
+        public int winners_count;
+        public int unclaimed_count;
+        public ArrayList<Long> winners = new ArrayList<>();
+        public int months;
+        public long stars;
+        public String prize_description;
+        public int until_date;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            only_new_subscribers = hasFlag(flags, FLAG_0);
+            refunded = hasFlag(flags, FLAG_2);
+            channel_id = stream.readInt64(exception);
+            if (hasFlag(flags, FLAG_3)) {
+                additional_peers_count = stream.readInt32(exception);
+            }
+            launch_msg_id = stream.readInt32(exception);
+            winners_count = stream.readInt32(exception);
+            unclaimed_count = stream.readInt32(exception);
+            winners = Vector.deserializeLong(stream, exception);
+            if (hasFlag(flags, FLAG_4)) {
+                months = stream.readInt32(exception);
+            }
+            if (hasFlag(flags, FLAG_5)) {
+                stars = stream.readInt64(exception);
+            }
+            if (hasFlag(flags, FLAG_1)) {
+                prize_description = stream.readString(exception);
+            }
+            until_date = stream.readInt32(exception);
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, only_new_subscribers);
+            flags = setFlag(flags, FLAG_2, refunded);
+            stream.writeInt32(flags);
+            stream.writeInt64(channel_id);
+            if (hasFlag(flags, FLAG_3)) {
+                stream.writeInt32(additional_peers_count);
+            }
+            stream.writeInt32(launch_msg_id);
+            stream.writeInt32(winners_count);
+            stream.writeInt32(unclaimed_count);
+            Vector.serializeLong(stream, winners);
+            if (hasFlag(flags, FLAG_4)) {
+                stream.writeInt32(months);
+            }
+            if (hasFlag(flags, FLAG_5)) {
+                stream.writeInt64(stars);
+            }
+            if (hasFlag(flags, FLAG_1)) {
+                stream.writeString(prize_description);
+            }
+            stream.writeInt32(until_date);
+        }
+    }
+
+    // === ADDED: TL_messageMediaGiveawayResults_layer186 ===
+    public static class TL_messageMediaGiveawayResults_layer186 extends TL_messageMediaGiveawayResults {
+        public static final int constructor = 0xc6991068;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            only_new_subscribers = hasFlag(flags, FLAG_0);
+            refunded = hasFlag(flags, FLAG_2);
+            channel_id = stream.readInt64(exception);
+            if (hasFlag(flags, FLAG_3)) {
+                additional_peers_count = stream.readInt32(exception);
+            }
+            launch_msg_id = stream.readInt32(exception);
+            winners_count = stream.readInt32(exception);
+            unclaimed_count = stream.readInt32(exception);
+            winners = Vector.deserializeLong(stream, exception);
+            months = stream.readInt32(exception);
+            if (hasFlag(flags, FLAG_1)) {
+                prize_description = stream.readString(exception);
+            }
+            until_date = stream.readInt32(exception);
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, only_new_subscribers);
+            flags = setFlag(flags, FLAG_2, refunded);
+            stream.writeInt32(flags);
+            stream.writeInt64(channel_id);
+            if (hasFlag(flags, FLAG_3)) {
+                stream.writeInt32(additional_peers_count);
+            }
+            stream.writeInt32(launch_msg_id);
+            stream.writeInt32(winners_count);
+            stream.writeInt32(unclaimed_count);
+            Vector.serializeLong(stream, winners);
+            stream.writeInt32(months);
+            if (hasFlag(flags, FLAG_1)) {
+                stream.writeString(prize_description);
+            }
+            stream.writeInt32(until_date);
+        }
+    }
+
+    // === ADDED: TL_messageMediaPaidMedia ===
+    public static class TL_messageMediaPaidMedia extends MessageMedia {
+        public static final int constructor = 0xa8852491;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            stars_amount = stream.readInt64(exception);
+            extended_media = Vector.deserialize(stream, MessageExtendedMedia::TLdeserialize, exception);
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            stream.writeInt64(stars_amount);
+            Vector.serialize(stream, extended_media);
+        }
+    }
+
+    // === ADDED: TL_messageActionGiftCode ===
+    public static class TL_messageActionGiftCode extends MessageAction {
+        public static final int constructor = 0x31c48347;
+
+        public boolean via_giveaway;
+        public boolean unclaimed;
+        public Peer boost_peer;
+        public String slug;
+        public TL_textWithEntities message;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            via_giveaway = hasFlag(flags, FLAG_0);
+            unclaimed = hasFlag(flags, FLAG_5);
+            if (hasFlag(flags, FLAG_1)) {
+                boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
+            }
+            days = stream.readInt32(exception);
+            months = (int) Math.round(days / 30.0f);
+            slug = stream.readString(exception);
+            if (hasFlag(flags, FLAG_2)) {
+                currency = stream.readString(exception);
+                amount = stream.readInt64(exception);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                cryptoCurrency = stream.readString(exception);
+                cryptoAmount = stream.readInt64(exception);
+            }
+            if (hasFlag(flags, FLAG_4)) {
+                message = TL_textWithEntities.TLdeserialize(stream, stream.readInt32(exception), exception);
+            }
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, via_giveaway);
+            flags = setFlag(flags, FLAG_5, unclaimed);
+            stream.writeInt32(flags);
+            if (hasFlag(flags, FLAG_1)) {
+                boost_peer.serializeToStream(stream);
+            }
+            stream.writeInt32(days);
+            stream.writeString(slug);
+            if (hasFlag(flags, FLAG_2)) {
+                stream.writeString(currency);
+                stream.writeInt64(amount);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                stream.writeString(cryptoCurrency);
+                stream.writeInt64(cryptoAmount);
+            }
+            if (hasFlag(flags, FLAG_4)) {
+                message.serializeToStream(stream);
+            }
+        }
+    }
+
+    // === ADDED: TL_messageActionGiftCode_layer216 ===
+    public static class TL_messageActionGiftCode_layer216 extends TL_messageActionGiftCode {
+        public static final int constructor = 0x56d03994;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            via_giveaway = hasFlag(flags, FLAG_0);
+            unclaimed = hasFlag(flags, FLAG_5);
+            if (hasFlag(flags, FLAG_1)) {
+                boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
+            }
+            months = stream.readInt32(exception);
+            days = months * 30;
+            slug = stream.readString(exception);
+            if (hasFlag(flags, FLAG_2)) {
+                currency = stream.readString(exception);
+                amount = stream.readInt64(exception);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                cryptoCurrency = stream.readString(exception);
+                cryptoAmount = stream.readInt64(exception);
+            }
+            if (hasFlag(flags, FLAG_4)) {
+                message = TL_textWithEntities.TLdeserialize(stream, stream.readInt32(exception), exception);
+            }
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, via_giveaway);
+            flags = setFlag(flags, FLAG_5, unclaimed);
+            stream.writeInt32(flags);
+            if (hasFlag(flags, FLAG_1)) {
+                boost_peer.serializeToStream(stream);
+            }
+            stream.writeInt32(months);
+            stream.writeString(slug);
+            if (hasFlag(flags, FLAG_2)) {
+                stream.writeString(currency);
+                stream.writeInt64(amount);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                stream.writeString(cryptoCurrency);
+                stream.writeInt64(cryptoAmount);
+            }
+            if (hasFlag(flags, FLAG_4)) {
+                message.serializeToStream(stream);
+            }
+        }
+    }
+
+    // === ADDED: TL_messageActionGiftCode_layer189 ===
+    public static class TL_messageActionGiftCode_layer189 extends TL_messageActionGiftCode {
+        public static final int constructor = 0x678c2e09;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            via_giveaway = hasFlag(flags, FLAG_0);
+            unclaimed = hasFlag(flags, FLAG_2);
+            if (hasFlag(flags, FLAG_1)) {
+                boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
+            }
+            months = stream.readInt32(exception);
+            days = months * 30;
+            slug = stream.readString(exception);
+            if (hasFlag(flags, FLAG_2)) {
+                currency = stream.readString(exception);
+            }
+            if (hasFlag(flags, FLAG_2)) {
+                amount = stream.readInt64(exception);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                cryptoCurrency = stream.readString(exception);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                cryptoAmount = stream.readInt64(exception);
+            }
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, via_giveaway);
+            flags = setFlag(flags, FLAG_2, unclaimed);
+            stream.writeInt32(flags);
+            if (hasFlag(flags, FLAG_1)) {
+                boost_peer.serializeToStream(stream);
+            }
+            stream.writeInt32(months);
+            stream.writeString(slug);
+            if (hasFlag(flags, FLAG_2)) {
+                stream.writeString(currency);
+            }
+            if (hasFlag(flags, FLAG_2)) {
+                stream.writeInt64(amount);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                stream.writeString(cryptoCurrency);
+            }
+            if (hasFlag(flags, FLAG_3)) {
+                stream.writeInt64(cryptoAmount);
+            }
+        }
+    }
+
+    // === ADDED: TL_messageActionGiftCode_layer167 ===
+    public static class TL_messageActionGiftCode_layer167 extends TL_messageActionGiftCode {
+        public static final int constructor = 0xd2cfdb0e;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            via_giveaway = hasFlag(flags, FLAG_0);
+            unclaimed = hasFlag(flags, FLAG_2);
+            if (hasFlag(flags, FLAG_1)) {
+                boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
+            }
+            months = stream.readInt32(exception);
+            days = months * 30;
+            slug = stream.readString(exception);
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, via_giveaway);
+            flags = setFlag(flags, FLAG_2, unclaimed);
+            stream.writeInt32(flags);
+            if (hasFlag(flags, FLAG_1)) {
+                boost_peer.serializeToStream(stream);
+            }
+            stream.writeInt32(months);
+            stream.writeString(slug);
+        }
+    }
+
+    // === ADDED: TL_messageActionGiftStars ===
+    public static class TL_messageActionGiftStars extends MessageAction {
+        public static final int constructor = 0x45d5b021;
+
+        public long stars;
+        public TL_paymentCharge charge;
+        public String transaction_id;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            currency = stream.readString(exception);
+            amount = stream.readInt64(exception);
+            stars = stream.readInt64(exception);
+            if (hasFlag(flags, FLAG_0)) {
+                cryptoCurrency = stream.readString(exception);
+                cryptoAmount = stream.readInt64(exception);
+            }
+            if (hasFlag(flags, FLAG_1)) {
+                transaction_id = stream.readString(exception);
+            }
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            stream.writeInt32(flags);
+            stream.writeString(currency);
+            stream.writeInt64(amount);
+            stream.writeInt64(stars);
+            if (hasFlag(flags, FLAG_0)) {
+                stream.writeString(cryptoCurrency);
+                stream.writeInt64(cryptoAmount);
+            }
+            if (hasFlag(flags, FLAG_1)) {
+                stream.writeString(transaction_id);
+            }
+        }
+    }
+
+    // === ADDED: TL_messageActionPrizeStars ===
+    public static class TL_messageActionPrizeStars extends MessageAction {
+        public static final int constructor = 0xb00c47a2;
+
+        public int flags;
+        public boolean via_giveaway;
+        public boolean unclaimed;
+        public long stars;
+        public String transaction_id;
+        public Peer boost_peer;
+        public int giveaway_msg_id;
+
+        @Override
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            unclaimed = hasFlag(flags, FLAG_0);
+            stars = stream.readInt64(exception);
+            transaction_id = stream.readString(exception);
+            boost_peer = Peer.TLdeserialize(stream, stream.readInt32(exception), exception);
+            giveaway_msg_id = stream.readInt32(exception);
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            flags = setFlag(flags, FLAG_0, unclaimed);
+            stream.writeInt32(flags);
+            stream.writeInt64(stars);
+            stream.writeString(transaction_id);
+            boost_peer.serializeToStream(stream);
+            stream.writeInt32(giveaway_msg_id);
+        }
+    }
+
+    // === ADDED: TL_messageActionGiftTon ===
+    public static class TL_messageActionGiftTon extends MessageAction {
+        public static final int constructor = 0xa8a3c699;
+
+        public String transaction_id;
+
+        public void readParams(InputSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            currency = stream.readString(exception);
+            amount = stream.readInt64(exception);
+            cryptoCurrency = stream.readString(exception);
+            cryptoAmount = stream.readInt64(exception);
+            if (hasFlag(flags, FLAG_0)) {
+                transaction_id = stream.readString(exception);
+            }
+        }
+
+        public void serializeToStream(OutputSerializedData stream) {
+            stream.writeInt32(constructor);
+            stream.writeInt32(flags);
+            stream.writeString(currency);
+            stream.writeInt64(amount);
+            stream.writeString(cryptoCurrency);
+            stream.writeInt64(cryptoAmount);
+            if (hasFlag(flags, FLAG_0)) {
+                stream.writeString(transaction_id);
             }
         }
     }
