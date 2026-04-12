@@ -1,87 +1,223 @@
-ReZeroGram — Plan of Fixes & Features
-=======================================
+=================================================================
+  PLANFIX.TXT — ReZeroGram: задачи и планы исправлений
+  Обновлено: 12 апреля 2026
+=================================================================
 
-[BUG-1] Исправлен ClassCastException в GroqPreferencesActivity
----------------------------------------------------------------
-Файл: TMessagesProj/src/main/java/com/ZeroGram/ReZeroGram/preferences/GroqPreferencesActivity.java
+-----------------------------------------------------------------
+ЗАДАЧА 1: Сообщения не отображаются ("Сообщение не поддерживается
+          Вашей версией ZeroGram. Пожалуйста, обновите приложение")
+-----------------------------------------------------------------
 
-Причина бага:
-  В BasePreferencesActivity.onCreateViewHolder типы View закреплены следующим образом:
-    type 1  → ShadowSectionCell
-    type 2  → TextCell
-    type 3  → HeaderCell
-    type 4  → HeaderSettingsCell   ← базовый класс создаёт HeaderSettingsCell для типа 4
-    type 5  → TextCheckCell        ← базовый класс создаёт TextCheckCell для типа 5
-    type 8  → TextInfoPrivacyCell
+СИМПТОМ:
+  В каналах (и не только) вместо содержимого сообщений — текст
+  "Сообщение не поддерживается Вашей версией ZeroGram".
+  В ExtraGram (ласт версия) те же сообщения отображаются нормально.
 
-  Но GroqPreferencesActivity.getItemViewType() возвращал:
-    groqEnabledRow → 4  (а базовый класс для типа 4 создаёт HeaderSettingsCell!)
-    groqInfoRow/groqPromptInfoRow → 5 (а базовый класс для типа 5 создаёт TextCheckCell!)
+ПРИЧИНА (диагноз):
+  Telegram-сервер использует TL (Type Language) схему для передачи
+  объектов. При получении неизвестного типа объекта форк выводит
+  заглушку "не поддерживается". Наш форк базируется на коде ExtraGram,
+  но, судя по скриншотам, не поддерживает новые типы сообщений:
+    - TL_message_service с новыми action-типами (Stars-подарки, Gifts)
+    - Новые типы медиа (TL_messageMediaPaidMedia или аналог)
+    - Sponsored messages / новые форматы закреплённых сообщений
+  LAYER в нашем коде: 158 (TLRPC.java, строка 74)
+  ExtraGram, вероятно, уже обновился на LAYER 166+ где эти типы есть.
 
-  В результате onBindViewHolder пытался сделать:
-    case 4: TextCheckCell checkCell = (TextCheckCell) holder.itemView;
-  Но holder.itemView на самом деле был HeaderSettingsCell → ClassCastException.
+ЧТО НУЖНО СДЕЛАТЬ:
+  A) Найти актуальный TL-слой из официального Telegram Android:
+       https://github.com/DrKLO/Telegram/blob/master/TMessagesProj/
+       src/main/java/org/telegram/tgnet/TLRPC.java
+     Или взять из ExtraGram последней версии (GitHub exteragram-dev).
 
-Исправление (строки 302-312 в исходнике):
-  getItemViewType():
-    groqEnabledRow: изменено возвращаемое значение с 4 на 5 (TextCheckCell)
-    groqInfoRow, groqPromptInfoRow: изменено с 5 на 8 (TextInfoPrivacyCell)
+  B) Обновить TLRPC.java — добавить отсутствующие классы для:
+       - TL_messageActionGiftStars (Stars-подарки)
+       - TL_messageActionPrizeStars
+       - TL_messageMediaGiveaway / TL_messageMediaGiveawayResults
+       - TL_messageActionPaymentSentMe (новые виды оплаты)
+       - Прочие новые TL-типы из свежего слоя
 
-  onBindViewHolder():
-    case 4 → case 5 (TextCheckCell для groqEnabledRow)
-    case 5 → case 8 (TextInfoPrivacyCell для info-строк)
+  C) Обновить LAYER = 158 → актуальное значение (например, 166)
 
-Примечание: BaseListAdapter.isEnabled() содержит "type == 5" в списке кликабельных типов,
-  что означает TextCheckCell (groqEnabledRow) — кликабельна ✓
-  TextInfoPrivacyCell (type 8) — не кликабельна (не в списке) ✓
+  D) Проверить MessagesController.java и MessageObject.java на
+     обработку новых типов (иначе объекты будут создаваться, но
+     не отображаться корректно)
+
+ФАЙЛЫ ДЛЯ ИЗМЕНЕНИЯ:
+  - TMessagesProj/src/main/java/org/telegram/tgnet/TLRPC.java
+  - TMessagesProj/src/main/java/org/telegram/messenger/MessageObject.java
+  - TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatMessageCell.java
+
+ПРИОРИТЕТ: КРИТИЧЕСКИЙ — пользователи не могут читать новые сообщения
 
 
-[FEATURE-2] Кнопка Groq AI в поле ввода сообщений
----------------------------------------------------
-Файл: TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java
+-----------------------------------------------------------------
+ЗАДАЧА 2: Кнопка Groq AI не появляется в поле ввода чата
+-----------------------------------------------------------------
 
-Что добавлено:
+СИМПТОМ:
+  Groq настроен и включён (ключ вставлен, галочка включена), но
+  при вводе текста в поле сообщения кнопка Groq не появляется
+  ни в поле ввода, ни где-либо ещё.
 
-1. Новые поля (рядом с attachButton, примерно строка 467):
-     private ImageView groqInputButton;
-     private String groqOriginalText = null;
-     private boolean groqTextReplaced = false;
+ПРИЧИНА (диагноз):
+  В GroqManager.java конструктор НЕ загружает настройки из SharedPrefs:
 
-2. Инициализация кнопки в блоке isChat (после attachButton.setContentDescription, ~строка 2055):
-   - Создаётся ImageView groqInputButton с иконкой msg_translate (✨ эффект)
-   - Добавляется в attachLayout на позицию 0 (самый левый в прикреплённых кнопках)
-   - Начальная видимость: GONE
-   - При клике в обычном режиме:
-       * Сохраняет текущий текст в groqOriginalText
-       * Блокирует кнопку (setEnabled(false), alpha 0.4)
-       * Вызывает GroqManager.restructureText()
-       * При успехе: вставляет ответ Groq в поле, устанавливает иконку msg_retry (undo)
-       * При ошибке: показывает Toast с текстом ошибки
-       * При обработке: показывает Toast "✨ Groq обрабатывает текст..."
-   - При клике в режиме undo (groqTextReplaced == true):
-       * Возвращает исходный текст из groqOriginalText
-       * Сбрасывает флаги
-       * Возвращает иконку msg_translate
+    private GroqManager() {
+        httpClient = new OkHttpClient.Builder()...
+        mainHandler = new Handler(Looper.getMainLooper());
+        // ← prefs НЕ загружаются здесь!
+    }
 
-3. Новый метод updateGroqInputButton(boolean hasText) (~строка 6536):
-   - Показывает кнопку если: hasText && GroqManager.getInstance().isEnabled()
-   - Скрывает кнопку если нет текста или Groq не включён
-   - При скрытии сбрасывает состояние undo
+  Настройки загружаются только при вызове init(context):
+    public void init(Context context) {
+        prefs = context.getApplicationContext()...
+        enabled = prefs.getBoolean(KEY_ENABLED, false);  ← дефолт false
+        apiKey  = prefs.getString(KEY_API_KEY, "");
+    }
 
-4. Обновлён метод updateFieldRight(int attachVisible) (~строка 6551):
-   - Добавлена переменная groqExtra = 48dp если groqInputButton VISIBLE, иначе 0
-   - groqExtra прибавляется ко всем значениям rightMargin при attachVisible == 1 и 2
-   - Это гарантирует, что текст не перекрывает кнопку Groq
+  ЕСЛИ init() не вызывается при старте приложения до создания
+  ChatActivityEnterView — isEnabled() вернёт false, и кнопка
+  останется GONE навсегда, даже при введённом тексте.
 
-5. Добавлен вызов updateGroqInputButton() в TextWatcher.onTextChanged() (~строка 4304):
-   - Вызывается после checkSendButton(true)
-   - Передаёт !TextUtils.isEmpty(charSequence)
+  Дополнительная проблема: updateGroqInputButton() вызывается
+  ТОЛЬКО в onTextChanged (строка 4301). Если после вызова init()
+  поле уже содержит текст — кнопка не появится, пока текст не
+  изменится.
 
-Логика работы для пользователя:
-  1. Пользователь пишет текст в поле ввода
-  2. Если Groq включён (API-ключ задан), появляется кнопка ✨ справа в поле
-  3. При нажатии — текст отправляется в Groq API
-  4. Ответ Groq заменяет текст в поле ввода
-  5. Иконка меняется на "стрелку назад" (msg_retry = undo)
-  6. При повторном нажатии — исходный текст восстанавливается
-  7. При очистке поля — кнопка скрывается, состояние undo сбрасывается
+ЧТО НУЖНО СДЕЛАТЬ:
+  A) Убедиться, что GroqManager.getInstance().init(context) вызывается
+     при старте приложения. Найти ApplicationLoader.java или
+     LaunchActivity.java и добавить вызов:
+       GroqManager.getInstance().init(context);
+     В строке Application.onCreate() или LaunchActivity.onCreate()
+
+  B) После добавления кнопки в attachLayout вызвать
+     updateGroqInputButton() сразу (не только в onTextChanged):
+       // После строки ~2061: attachLayout.addView(groqInputButton...)
+       groqInputButton.post(() ->
+           updateGroqInputButton(!TextUtils.isEmpty(
+               messageEditText != null ? messageEditText.getText() : null)));
+
+  C) Также проверить, что в GroqPreferencesActivity при включении
+     тумблера вызывается notifyListeners() или broadcast, чтобы
+     ChatActivityEnterView перерисовал кнопку немедленно
+
+ФАЙЛЫ ДЛЯ ИЗМЕНЕНИЯ:
+  - TMessagesProj/src/main/java/org/telegram/messenger/ApplicationLoader.java
+    (найти Application.onCreate() — добавить init Groq)
+  - TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java
+    (строка ~2061 — добавить post-вызов updateGroqInputButton)
+  - TMessagesProj/src/main/java/com/ZeroGram/ReZeroGram/groq/GroqPreferencesActivity.java
+    (при изменении enabled — уведомить ChatActivityEnterView)
+
+ПРИОРИТЕТ: ВЫСОКИЙ — основная заявленная фича не работает
+
+
+-----------------------------------------------------------------
+ЗАДАЧА 3А: Переименовать "exteraGram" → "ZeroGram+" в настройках
+-----------------------------------------------------------------
+
+СИМПТОМ:
+  В разделе настроек отображается "exteraGram Preferences"
+  вместо "ZeroGram+ Preferences". Также в других строках
+  встречается старое имя "exteraGram".
+
+ПРИЧИНА:
+  В файле extera.xml строки не переименованы:
+    <string name="Preferences">exteraGram Preferences</string>
+    <string name="PauseOnMinimizeInfo">...exteraGram is minimized.</string>
+    <string name="ResetSettingsBulletin">**exteraGram** Preferences...</string>
+
+ЧТО НУЖНО СДЕЛАТЬ:
+  В файле TMessagesProj/src/main/res/values/extera.xml заменить:
+
+    ДО:   <string name="Preferences">exteraGram Preferences</string>
+    ПОСЛЕ: <string name="Preferences">ZeroGram+ Preferences</string>
+
+    ДО:   ...exteraGram is minimized.</string>
+    ПОСЛЕ: ...ZeroGram+ is minimized.</string>
+
+    ДО:   **exteraGram** Preferences have been reset.
+    ПОСЛЕ: **ZeroGram+** Preferences have been reset.
+
+  Проверить все другие локализации (values-ru/, values-be/, etc.) —
+  там тоже могут быть строки с "exteraGram".
+
+ФАЙЛЫ ДЛЯ ИЗМЕНЕНИЯ:
+  - TMessagesProj/src/main/res/values/extera.xml  (главный)
+  - TMessagesProj/src/main/res/values-*/extera.xml (локализации)
+
+ПРИОРИТЕТ: СРЕДНИЙ — косметический, но влияет на восприятие бренда
+
+
+-----------------------------------------------------------------
+ЗАДАЧА 3Б: Добавить доступ к настройкам иконки приложения
+           рядом с Groq AI в главном меню настроек
+-----------------------------------------------------------------
+
+СИМПТОМ:
+  Класс IconSelectorAlert.java существует в проекте
+  (TMessagesProj/src/main/java/com/ZeroGram/ReZeroGram/components/),
+  но пункт смены иконки приложения нигде не доступен из интерфейса.
+  Пользователь хочет видеть эту опцию в главном меню настроек
+  рядом с пунктом "Groq AI".
+
+ЧТО НУЖНО СДЕЛАТЬ:
+  A) В MainPreferencesActivity.java добавить новую строку в список:
+       private int appIconRow;  // объявить рядом с groqRow
+
+     В createRows() добавить:
+       appIconRow = newRow();
+
+     В onItemClick() обработать нажатие:
+       } else if (position == appIconRow) {
+           new IconSelectorAlert(getParentActivity(), ...);
+       }
+
+     В onBindViewHolder() отобразить ячейку:
+       } else if (position == appIconRow) {
+           textCell.setTextAndIcon(
+               LocaleController.getString("AppIcon", R.string.AppIcon),
+               R.drawable.msg_theme, false);
+       }
+
+  B) Добавить строку в extera.xml:
+       <string name="AppIcon">Иконка приложения</string>
+
+  C) Убедиться, что AndroidManifest.xml содержит <activity-alias>
+     для каждой иконки-варианта (иначе смена иконки не заработает)
+
+ФАЙЛЫ ДЛЯ ИЗМЕНЕНИЯ:
+  - TMessagesProj/src/main/java/com/ZeroGram/ReZeroGram/preferences/
+      MainPreferencesActivity.java
+  - TMessagesProj/src/main/res/values/extera.xml
+  - TMessagesProj/src/main/AndroidManifest.xml  (проверить alias-ы)
+
+ПРИОРИТЕТ: СРЕДНИЙ — запрос пользователя
+
+
+=================================================================
+  ИСТОРИЯ ИЗМЕНЕНИЙ
+=================================================================
+
+[2026-04-11] ИСПРАВЛЕНО: ClassCastException в GroqPreferencesActivity
+  - Файл: preferences/GroqPreferencesActivity.java
+  - getItemViewType() возвращал неверные коды (4 вместо 5, 5 вместо 8)
+  - Исправлены case-числа в onBindViewHolder() соответственно
+
+[2026-04-11] ДОБАВЛЕНО: Кнопка Groq AI в поле ввода чата
+  - Файл: org/telegram/ui/Components/ChatActivityEnterView.java
+  - ImageView groqInputButton добавлен в attachLayout (индекс 0)
+  - При вводе текста + Groq включён → кнопка видна
+  - Нажатие отправляет текст в Groq API, заменяет результатом
+  - Повторное нажатие → кнопка undo → восстанавливает исходный текст
+  - updateFieldRight() обновлён (+48dp для groqExtra)
+
+[2026-04-11] CI/CD: GitHub Actions build.yml настроен корректно
+  - Убран шаг "Фикс Google Services и памяти" который перезаписывал
+    JVM аргументы с 8g/32m (из gradle.properties) на меньшие 6g/8m
+  - APP_ID=39700964, APP_HASH прописаны
+  - Сборки #9, #10, #11 — успешны, APK ~68.7МБ
+
+=================================================================
