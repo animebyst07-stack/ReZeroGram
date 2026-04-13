@@ -3754,7 +3754,6 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     }
                 });
             }
-        }
 
             // ============ DEBUG LOG PANEL (ReZeroGram auth diagnostics) ============
             {
