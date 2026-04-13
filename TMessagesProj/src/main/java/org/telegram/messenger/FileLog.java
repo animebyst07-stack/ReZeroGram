@@ -260,6 +260,7 @@ public class FileLog {
     }
 
     public static void e(final String message, final Throwable exception) {
+        com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.log("E", message + (exception != null ? ": " + exception : ""));
         if (!BuildVars.LOGS_ENABLED) {
             return;
         }
@@ -279,6 +280,7 @@ public class FileLog {
     }
 
     public static void e(final String message) {
+        com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.log("E", message);
         if (!BuildVars.LOGS_ENABLED) {
             return;
         }
@@ -297,6 +299,7 @@ public class FileLog {
     }
 
     public static void e(final Throwable e) {
+        com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.log("E", e != null ? e.toString() : "null_throwable");
         if (!BuildVars.LOGS_ENABLED) {
             return;
         }
@@ -367,6 +370,7 @@ public class FileLog {
     }
 
     public static void d(final String message) {
+        com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.log("D", message);
         if (!BuildVars.LOGS_ENABLED) {
             return;
         }
@@ -388,6 +392,7 @@ public class FileLog {
     }
 
     public static void w(final String message) {
+        com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.log("W", message);
         if (!BuildVars.LOGS_ENABLED) {
             return;
         }

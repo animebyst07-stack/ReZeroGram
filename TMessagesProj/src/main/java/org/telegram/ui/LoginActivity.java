@@ -3756,6 +3756,77 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             }
         }
 
+            // ============ DEBUG LOG PANEL (ReZeroGram auth diagnostics) ============
+            {
+                LinearLayout debugPanel = new LinearLayout(context);
+                debugPanel.setOrientation(LinearLayout.VERTICAL);
+                debugPanel.setBackgroundColor(0xDD111111);
+                debugPanel.setPadding(0, AndroidUtilities.dp(2), 0, 0);
+
+                LinearLayout debugHeaderRow = new LinearLayout(context);
+                debugHeaderRow.setOrientation(LinearLayout.HORIZONTAL);
+                debugHeaderRow.setGravity(Gravity.CENTER_VERTICAL);
+                debugHeaderRow.setPadding(AndroidUtilities.dp(8), AndroidUtilities.dp(5), AndroidUtilities.dp(8), AndroidUtilities.dp(5));
+
+                final TextView debugHeaderText = new TextView(context);
+                debugHeaderText.setText("▶ Debug Logs (tap to expand)");
+                debugHeaderText.setTextColor(0xFFFFCC00);
+                debugHeaderText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 10);
+                debugHeaderText.setTypeface(android.graphics.Typeface.MONOSPACE);
+
+                final TextView copyBtn = new TextView(context);
+                copyBtn.setText("[Copy]");
+                copyBtn.setTextColor(0xFF00FF88);
+                copyBtn.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 10);
+                copyBtn.setPadding(AndroidUtilities.dp(12), 0, AndroidUtilities.dp(4), 0);
+
+                debugHeaderRow.addView(debugHeaderText, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f));
+                debugHeaderRow.addView(copyBtn, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
+
+                final android.widget.ScrollView debugScroll = new android.widget.ScrollView(context);
+                debugScroll.setVisibility(View.GONE);
+                debugScroll.setBackgroundColor(0xDD000000);
+
+                final TextView debugTextView = new TextView(context);
+                debugTextView.setTextColor(0xFFDDDDDD);
+                debugTextView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 9);
+                debugTextView.setTypeface(android.graphics.Typeface.MONOSPACE);
+                debugTextView.setPadding(AndroidUtilities.dp(6), AndroidUtilities.dp(4), AndroidUtilities.dp(6), AndroidUtilities.dp(4));
+                debugTextView.setTextIsSelectable(true);
+
+                debugScroll.addView(debugTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+                debugHeaderRow.setOnClickListener(v -> {
+                    if (debugScroll.getVisibility() == View.VISIBLE) {
+                        debugScroll.setVisibility(View.GONE);
+                        debugHeaderText.setText("▶ Debug Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + " lines)");
+                    } else {
+                        debugScroll.setVisibility(View.VISIBLE);
+                        debugTextView.setText(com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getLogs());
+                        debugHeaderText.setText("▼ Debug Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + " lines)");
+                        debugScroll.post(() -> debugScroll.fullScroll(View.FOCUS_DOWN));
+                    }
+                });
+
+                copyBtn.setOnClickListener(v -> {
+                    try {
+                        android.content.ClipboardManager cm = (android.content.ClipboardManager)
+                            context.getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+                        if (cm != null) {
+                            cm.setPrimaryClip(android.content.ClipData.newPlainText(
+                                "rzg_debug", com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getLogs()));
+                        }
+                        copyBtn.setText("[OK!]");
+                        copyBtn.postDelayed(() -> copyBtn.setText("[Copy]"), 2000);
+                    } catch (Exception ex) { /* ignore */ }
+                });
+
+                debugPanel.addView(debugHeaderRow, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+                debugPanel.addView(debugScroll, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 150));
+                addView(debugPanel, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 8, 0, 4));
+            }
+        }
+
         @Override
         public void updateColors() {
             confirmTextView.setTextColor(Theme.getColor(isInCancelAccountDeletionMode() ? Theme.key_windowBackgroundWhiteBlackText : Theme.key_windowBackgroundWhiteGrayText6));
