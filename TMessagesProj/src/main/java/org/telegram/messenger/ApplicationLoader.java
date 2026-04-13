@@ -235,7 +235,11 @@ public class ApplicationLoader extends Application {
         BillingController.getInstance().startConnection();
 
         // AyuGram: start sync
-        AyuSyncController.create();
+        try {
+            AyuSyncController.create();
+        } catch (Exception e) {
+            FileLog.e("AyuSyncController.create() failed during app init", e);
+        }
     }
 
     public ApplicationLoader() {

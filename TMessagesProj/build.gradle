@@ -138,10 +138,16 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("config/release.jks")
-            storePassword "rezero2024"
+            storeFile file("rezero.jks")
+            storePassword "rezero123"
             keyAlias "rezero"
-            keyPassword "rezero2024"
+            keyPassword "rezero123"
+        }
+        debug {
+            storeFile file("rezero.jks")
+            storePassword "rezero123"
+            keyAlias "rezero"
+            keyPassword "rezero123"
         }
     }
 
@@ -151,6 +157,7 @@ android {
         debug {
             debuggable true
             jniDebuggable false
+            signingConfig signingConfigs.debug
             minifyEnabled false
             shrinkResources false
             multiDexEnabled true

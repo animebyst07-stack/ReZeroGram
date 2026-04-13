@@ -1577,39 +1577,70 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
     }
 
     private void needFinishActivity(boolean afterSignup, boolean showSetPasswordConfirm, int otherwiseRelogin) {
-        if (getParentActivity() != null) {
-            AndroidUtilities.setLightStatusBar(getParentActivity().getWindow(), false);
-        }
-        clearCurrentState();
-        if (getParentActivity() instanceof LaunchActivity) {
-            if (newAccount) {
-                newAccount = false;
-                ((LaunchActivity) getParentActivity()).switchToAccount(currentAccount, false, obj -> {
-                    Bundle args = new Bundle();
-                    args.putBoolean("afterSignup", afterSignup);
-                    return new DialogsActivity(args);
-                });
-                finishFragment();
-            } else {
-
-                if (afterSignup && showSetPasswordConfirm) {
-                    TwoStepVerificationSetupActivity twoStepVerification = new TwoStepVerificationSetupActivity(TwoStepVerificationSetupActivity.TYPE_INTRO, null);
-                    twoStepVerification.setBlockingAlert(otherwiseRelogin);
-                    twoStepVerification.setFromRegistration(true);
-                    presentFragment(twoStepVerification, true);
-                } else {
-                    Bundle args = new Bundle();
-                    args.putBoolean("afterSignup", afterSignup);
-                    DialogsActivity dialogsActivity = new DialogsActivity(args);
-                    presentFragment(dialogsActivity, true);
-                }
-
-                NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.mainUserInfoChanged);
-                LocaleController.getInstance().loadRemoteLanguages(currentAccount);
-                RestrictedLanguagesSelectActivity.checkRestrictedLanguages(true);
+        try {
+            if (getParentActivity() != null) {
+                AndroidUtilities.setLightStatusBar(getParentActivity().getWindow(), false);
             }
-        } else if (getParentActivity() instanceof ExternalActionActivity) {
-            ((ExternalActionActivity) getParentActivity()).onFinishLogin();
+            clearCurrentState();
+            if (getParentActivity() instanceof LaunchActivity) {
+                if (newAccount) {
+                    newAccount = false;
+                    ((LaunchActivity) getParentActivity()).switchToAccount(currentAccount, false, obj -> {
+                        Bundle args = new Bundle();
+                        args.putBoolean("afterSignup", afterSignup);
+                        return new DialogsActivity(args);
+                    });
+                    finishFragment();
+                } else {
+                    if (afterSignup && showSetPasswordConfirm) {
+                        TwoStepVerificationSetupActivity twoStepVerification = new TwoStepVerificationSetupActivity(TwoStepVerificationSetupActivity.TYPE_INTRO, null);
+                        twoStepVerification.setBlockingAlert(otherwiseRelogin);
+                        twoStepVerification.setFromRegistration(true);
+                        presentFragment(twoStepVerification, true);
+                    } else {
+                        Bundle args = new Bundle();
+                        args.putBoolean("afterSignup", afterSignup);
+                        DialogsActivity dialogsActivity = new DialogsActivity(args);
+                        presentFragment(dialogsActivity, true);
+                    }
+                    NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.mainUserInfoChanged);
+                    LocaleController.getInstance().loadRemoteLanguages(currentAccount);
+                    RestrictedLanguagesSelectActivity.checkRestrictedLanguages(true);
+                }
+            } else if (getParentActivity() instanceof ExternalActionActivity) {
+                ((ExternalActionActivity) getParentActivity()).onFinishLogin();
+            } else {
+                // Fallback for LAYER 190+: parent activity type not recognized — navigate via Intent
+                FileLog.e("needFinishActivity: unknown parent activity, using Intent fallback");
+                try {
+                    android.content.Intent intent = new android.content.Intent(
+                        getParentActivity() != null ? getParentActivity() : ApplicationLoader.applicationContext,
+                        LaunchActivity.class
+                    );
+                    intent.setAction("android.intent.action.MAIN");
+                    intent.addCategory("android.intent.category.LAUNCHER");
+                    intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    if (getParentActivity() != null) {
+                        getParentActivity().startActivity(intent);
+                        getParentActivity().finish();
+                    } else {
+                        intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+                        ApplicationLoader.applicationContext.startActivity(intent);
+                    }
+                } catch (Exception fallbackEx) {
+                    FileLog.e("needFinishActivity fallback failed", fallbackEx);
+                }
+            }
+        } catch (Exception e) {
+            FileLog.e("needFinishActivity failed, attempting recovery", e);
+            try {
+                Bundle args = new Bundle();
+                args.putBoolean("afterSignup", afterSignup);
+                DialogsActivity dialogsActivity = new DialogsActivity(args);
+                presentFragment(dialogsActivity, true);
+            } catch (Exception e2) {
+                FileLog.e("needFinishActivity recovery also failed", e2);
+            }
         }
     }
 
