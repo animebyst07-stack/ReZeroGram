@@ -1577,12 +1577,14 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
     }
 
     private void needFinishActivity(boolean afterSignup, boolean showSetPasswordConfirm, int otherwiseRelogin) {
+        FileLog.d("RZG_AUTH: needFinishActivity called, parent=" + (getParentActivity() != null ? getParentActivity().getClass().getSimpleName() : "null") + ", newAccount=" + newAccount + ", afterSignup=" + afterSignup);
         try {
             if (getParentActivity() != null) {
                 AndroidUtilities.setLightStatusBar(getParentActivity().getWindow(), false);
             }
             clearCurrentState();
             if (getParentActivity() instanceof LaunchActivity) {
+                FileLog.d("RZG_AUTH: parent is LaunchActivity, newAccount=" + newAccount);
                 if (newAccount) {
                     newAccount = false;
                     ((LaunchActivity) getParentActivity()).switchToAccount(currentAccount, false, obj -> {
@@ -1593,21 +1595,25 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     finishFragment();
                 } else {
                     if (afterSignup && showSetPasswordConfirm) {
+                        FileLog.d("RZG_AUTH: presenting 2FA setup");
                         TwoStepVerificationSetupActivity twoStepVerification = new TwoStepVerificationSetupActivity(TwoStepVerificationSetupActivity.TYPE_INTRO, null);
                         twoStepVerification.setBlockingAlert(otherwiseRelogin);
                         twoStepVerification.setFromRegistration(true);
                         presentFragment(twoStepVerification, true);
                     } else {
+                        FileLog.d("RZG_AUTH: presenting DialogsActivity");
                         Bundle args = new Bundle();
                         args.putBoolean("afterSignup", afterSignup);
                         DialogsActivity dialogsActivity = new DialogsActivity(args);
                         presentFragment(dialogsActivity, true);
+                        FileLog.d("RZG_AUTH: presentFragment(DialogsActivity) done");
                     }
                     NotificationCenter.getInstance(currentAccount).postNotificationName(NotificationCenter.mainUserInfoChanged);
                     LocaleController.getInstance().loadRemoteLanguages(currentAccount);
                     RestrictedLanguagesSelectActivity.checkRestrictedLanguages(true);
                 }
             } else if (getParentActivity() instanceof ExternalActionActivity) {
+                FileLog.d("RZG_AUTH: parent is ExternalActionActivity");
                 ((ExternalActionActivity) getParentActivity()).onFinishLogin();
             } else {
                 // Fallback for LAYER 190+: parent activity type not recognized — navigate via Intent
@@ -1649,6 +1655,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
     }
 
     private void onAuthSuccess(TLRPC.TL_auth_authorization res, boolean afterSignup) {
+        FileLog.d("RZG_AUTH: onAuthSuccess called, afterSignup=" + afterSignup + ", user=" + (res != null && res.user != null ? res.user.id : "null"));
         try {
             MessagesController.getInstance(currentAccount).cleanup();
             ConnectionsManager.getInstance(currentAccount).setUserId(res.user.id);
@@ -3755,82 +3762,57 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 });
             }
 
-            // ============ DEBUG LOG PANEL (ReZeroGram auth diagnostics) ============
-            // Floating collapsible panel at the top — does NOT interfere with keyboard or input
+            // ============ DEBUG LOG CHIP (ReZeroGram auth diagnostics) ============
+            // Tiny chip in top-right corner; taps open a full-screen dialog with logs
             {
-                final android.widget.FrameLayout debugContainer = new android.widget.FrameLayout(context);
+                final TextView debugChip = new TextView(context);
+                debugChip.setText("DBG");
+                debugChip.setTextColor(0xFFFFFFFF);
+                debugChip.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 9);
+                debugChip.setTypeface(android.graphics.Typeface.MONOSPACE);
+                debugChip.setBackgroundColor(0xBB1A1A2E);
+                debugChip.setPadding(AndroidUtilities.dp(5), AndroidUtilities.dp(2), AndroidUtilities.dp(5), AndroidUtilities.dp(2));
 
-                LinearLayout debugPanel = new LinearLayout(context);
-                debugPanel.setOrientation(LinearLayout.VERTICAL);
-                debugPanel.setBackgroundColor(0xCC1A1A2E);
-
-                LinearLayout debugHeaderRow = new LinearLayout(context);
-                debugHeaderRow.setOrientation(LinearLayout.HORIZONTAL);
-                debugHeaderRow.setGravity(Gravity.CENTER_VERTICAL);
-                debugHeaderRow.setPadding(AndroidUtilities.dp(10), AndroidUtilities.dp(4), AndroidUtilities.dp(10), AndroidUtilities.dp(4));
-
-                final TextView debugHeaderText = new TextView(context);
-                debugHeaderText.setText("▶ Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + ")");
-                debugHeaderText.setTextColor(0xFFFFCC00);
-                debugHeaderText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 11);
-                debugHeaderText.setTypeface(android.graphics.Typeface.MONOSPACE);
-
-                final TextView copyBtn = new TextView(context);
-                copyBtn.setText("[Copy]");
-                copyBtn.setTextColor(0xFF00FF88);
-                copyBtn.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 11);
-                copyBtn.setPadding(AndroidUtilities.dp(12), 0, AndroidUtilities.dp(4), 0);
-
-                debugHeaderRow.addView(debugHeaderText, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f));
-                debugHeaderRow.addView(copyBtn, LayoutHelper.createLinear(LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT));
-
-                final android.widget.ScrollView debugScroll = new android.widget.ScrollView(context);
-                debugScroll.setVisibility(View.GONE);
-                debugScroll.setBackgroundColor(0xEE0D0D1A);
-
-                final TextView debugTextView = new TextView(context);
-                debugTextView.setTextColor(0xFFDDDDDD);
-                debugTextView.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 9);
-                debugTextView.setTypeface(android.graphics.Typeface.MONOSPACE);
-                debugTextView.setPadding(AndroidUtilities.dp(6), AndroidUtilities.dp(4), AndroidUtilities.dp(6), AndroidUtilities.dp(4));
-                debugTextView.setTextIsSelectable(true);
-
-                debugScroll.addView(debugTextView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-
-                debugHeaderRow.setOnClickListener(v -> {
-                    if (debugScroll.getVisibility() == View.VISIBLE) {
-                        debugScroll.setVisibility(View.GONE);
-                        debugHeaderText.setText("▶ Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + ")");
-                    } else {
-                        debugScroll.setVisibility(View.VISIBLE);
-                        debugTextView.setText(com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getLogs());
-                        debugHeaderText.setText("▼ Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + ")");
-                        debugScroll.post(() -> debugScroll.fullScroll(View.FOCUS_DOWN));
-                    }
-                });
-
-                copyBtn.setOnClickListener(v -> {
+                debugChip.setOnClickListener(v -> {
                     try {
-                        android.content.ClipboardManager cm = (android.content.ClipboardManager)
-                            context.getSystemService(android.content.Context.CLIPBOARD_SERVICE);
-                        if (cm != null) {
-                            cm.setPrimaryClip(android.content.ClipData.newPlainText(
-                                "rzg_debug", com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getLogs()));
-                        }
-                        copyBtn.setText("[OK!]");
-                        copyBtn.postDelayed(() -> copyBtn.setText("[Copy]"), 2000);
+                        android.app.AlertDialog.Builder dlgBuilder = new android.app.AlertDialog.Builder(context);
+                        dlgBuilder.setTitle("Debug Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + ")");
+
+                        android.widget.ScrollView sv = new android.widget.ScrollView(context);
+                        TextView tv = new TextView(context);
+                        tv.setTextColor(0xFF222222);
+                        tv.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 9);
+                        tv.setTypeface(android.graphics.Typeface.MONOSPACE);
+                        tv.setPadding(AndroidUtilities.dp(8), AndroidUtilities.dp(4), AndroidUtilities.dp(8), AndroidUtilities.dp(4));
+                        tv.setTextIsSelectable(true);
+                        tv.setText(com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getLogs());
+                        sv.addView(tv);
+                        dlgBuilder.setView(sv);
+
+                        dlgBuilder.setNegativeButton("Copy", (d, w) -> {
+                            try {
+                                android.content.ClipboardManager cm = (android.content.ClipboardManager)
+                                    context.getSystemService(android.content.Context.CLIPBOARD_SERVICE);
+                                if (cm != null) {
+                                    cm.setPrimaryClip(android.content.ClipData.newPlainText(
+                                        "rzg_debug", com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getLogs()));
+                                }
+                            } catch (Exception ex) { /* ignore */ }
+                        });
+                        dlgBuilder.setPositiveButton("Close", null);
+                        dlgBuilder.setNeutralButton("Clear", (d, w) -> com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.clear());
+
+                        android.app.AlertDialog dlg = dlgBuilder.create();
+                        dlg.show();
+                        sv.post(() -> sv.fullScroll(View.FOCUS_DOWN));
                     } catch (Exception ex) { /* ignore */ }
                 });
 
-                debugPanel.addView(debugHeaderRow, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-                debugPanel.addView(debugScroll, new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT, AndroidUtilities.dp(120)));
-
-                debugContainer.addView(debugPanel, LayoutHelper.createFrame(
-                    LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
-                    Gravity.TOP | Gravity.LEFT, 0, 0, 0, 0));
-
-                addView(debugContainer, 0, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+                android.widget.FrameLayout chipHolder = new android.widget.FrameLayout(context);
+                chipHolder.addView(debugChip, LayoutHelper.createFrame(
+                    LayoutHelper.WRAP_CONTENT, LayoutHelper.WRAP_CONTENT, Gravity.END | Gravity.TOP, 0, 4, 4, 0));
+                addView(chipHolder, 0, LayoutHelper.createLinear(
+                    LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
             }
         }
 
@@ -4527,6 +4509,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     break;
                 }
                 default: {
+                    FileLog.d("RZG_AUTH: sending TL_auth_signIn, phone=" + requestPhone + ", code_len=" + (code != null ? code.length() : 0));
                     TLRPC.TL_auth_signIn req = new TLRPC.TL_auth_signIn();
                     req.phone_number = requestPhone;
                     req.phone_code = code;
@@ -4540,6 +4523,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     }
 
                     int reqId = ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
+                        FileLog.d("RZG_AUTH: signIn response received, error=" + (error != null ? error.text : "null") + ", response=" + (response != null ? response.getClass().getSimpleName() : "null"));
                         tryHideProgress(false, true);
 
                         boolean ok = false;
@@ -4551,6 +4535,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                             destroyTimer();
                             destroyCodeTimer();
                             if (response instanceof TLRPC.TL_auth_authorizationSignUpRequired) {
+                                FileLog.d("RZG_AUTH: sign up required, navigating to register");
                                 TLRPC.TL_auth_authorizationSignUpRequired authorization = (TLRPC.TL_auth_authorizationSignUpRequired) response;
                                 if (authorization.terms_of_service != null) {
                                     currentTermsOfService = authorization.terms_of_service;
@@ -4562,14 +4547,21 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
 
                                 animateSuccess(() -> setPage(VIEW_REGISTER, true, params, false));
                             } else {
-                                animateSuccess(() -> onAuthSuccess((TLRPC.TL_auth_authorization) response));
+                                FileLog.d("RZG_AUTH: auth success, calling animateSuccess -> onAuthSuccess");
+                                animateSuccess(() -> {
+                                    FileLog.d("RZG_AUTH: animateSuccess callback fired, calling onAuthSuccess");
+                                    onAuthSuccess((TLRPC.TL_auth_authorization) response);
+                                });
                             }
                         } else {
                             lastError = error.text;
+                            FileLog.d("RZG_AUTH: signIn error: " + error.text);
                             if (error.text.contains("SESSION_PASSWORD_NEEDED")) {
+                                FileLog.d("RZG_AUTH: 2FA required, fetching password");
                                 ok = true;
                                 TLRPC.TL_account_getPassword req2 = new TLRPC.TL_account_getPassword();
                                 ConnectionsManager.getInstance(currentAccount).sendRequest(req2, (response1, error1) -> AndroidUtilities.runOnUIThread(() -> {
+                                    FileLog.d("RZG_AUTH: getPassword response, error=" + (error1 != null ? error1.text : "null"));
                                     nextPressed = false;
                                     showDoneButton(false, true);
                                     if (error1 == null) {
