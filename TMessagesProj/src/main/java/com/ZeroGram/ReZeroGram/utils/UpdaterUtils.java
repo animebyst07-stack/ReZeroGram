@@ -101,63 +101,71 @@ public class UpdaterUtils {
 
         checkingForUpdates = true;
         otaQueue.postRunnable(() -> {
-            ExteraConfig.editor.putLong("lastUpdateCheckTime", ExteraConfig.lastUpdateCheckTime = System.currentTimeMillis()).apply();
             try {
-                if (BuildVars.isBetaApp())
-                    uri = uri.replace("/" + AyuConstants.APP_NAME + "/", "/" + AyuConstants.APP_NAME + "-Beta/");
-                var connection = (HttpURLConnection) new URI(uri).toURL().openConnection();
-                connection.setRequestMethod("GET");
-                connection.setRequestProperty("User-Agent", TranslatorUtils.formatUserAgent());
-                connection.setRequestProperty("Content-Type", "application/json");
+                ExteraConfig.editor.putLong("lastUpdateCheckTime", ExteraConfig.lastUpdateCheckTime = System.currentTimeMillis()).apply();
+                try {
+                    String checkUri = uri;
+                    if (BuildVars.isBetaApp())
+                        checkUri = checkUri.replace("/" + AyuConstants.APP_NAME + "/", "/" + AyuConstants.APP_NAME + "-Beta/");
+                    var connection = (HttpURLConnection) new URI(checkUri).toURL().openConnection();
+                    connection.setConnectTimeout(15000);
+                    connection.setReadTimeout(15000);
+                    connection.setRequestMethod("GET");
+                    connection.setRequestProperty("User-Agent", TranslatorUtils.formatUserAgent());
+                    connection.setRequestProperty("Content-Type", "application/json");
 
-                var textBuilder = new StringBuilder();
-                try (Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-                    int c;
-                    while ((c = reader.read()) != -1)
-                        textBuilder.append((char) c);
-                }
-
-                var obj = new JSONObject(textBuilder.toString());
-                var arr = obj.getJSONArray("assets");
-
-                if (arr.length() == 0)
-                    return;
-
-                String link, installedApkType = getInstalledApkType();
-                String[] supportedTypes = {"arm64-v8a", "armeabi-v7a", "x86", "x86_64", "universal"};
-                loop:
-                for (int i = 0; i < arr.length(); i++) {
-                    downloadURL = link = arr.getJSONObject(i).getString("browser_download_url");
-                    size = AndroidUtilities.formatFileSize(arr.getJSONObject(i).getLong("size"));
-                    if (link.contains("beta") && BuildVars.isBetaApp()) {
-                        break;
+                    var textBuilder = new StringBuilder();
+                    try (Reader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                        int c;
+                        while ((c = reader.read()) != -1)
+                            textBuilder.append((char) c);
                     }
-                    for (String type : supportedTypes) {
-                        if (link.contains(type) && Objects.equals(installedApkType, type)) {
-                            break loop;
+
+                    var obj = new JSONObject(textBuilder.toString());
+                    var arr = obj.getJSONArray("assets");
+
+                    if (arr.length() == 0)
+                        return;
+
+                    String link, installedApkType = getInstalledApkType();
+                    String[] supportedTypes = {"arm64-v8a", "armeabi-v7a", "x86", "x86_64", "universal"};
+                    loop:
+                    for (int i = 0; i < arr.length(); i++) {
+                        downloadURL = link = arr.getJSONObject(i).getString("browser_download_url");
+                        size = AndroidUtilities.formatFileSize(arr.getJSONObject(i).getLong("size"));
+                        if (link.contains("beta") && BuildVars.isBetaApp()) {
+                            break;
+                        }
+                        for (String type : supportedTypes) {
+                            if (link.contains(type) && Objects.equals(installedApkType, type)) {
+                                break loop;
+                            }
                         }
                     }
+                    version = obj.getString("tag_name");
+                    changelog = obj.getString("body");
+                    uploadDate = obj.getString("published_at").replaceAll("[TZ]", " ");
+                    uploadDate = LocaleController.formatDateTime(getMillisFromDate(uploadDate, "yyyy-M-dd hh:mm:ss") / 1000);
+                    Update update = new Update(version, changelog, size, downloadURL, uploadDate);
+                    if (update.isNew() && fragment != null) {
+                        checkDirs();
+                        AndroidUtilities.runOnUIThread(() -> {
+                            (new UpdaterBottomSheet(fragment.getContext(), fragment, true, update)).show();
+                            if (onUpdateFound != null)
+                                onUpdateFound.run();
+                        });
+                    } else {
+                        if (onUpdateNotFound != null)
+                            AndroidUtilities.runOnUIThread(onUpdateNotFound::run);
+                    }
+                } catch (Exception e) {
+                    FileLog.e("UpdaterUtils: update check failed (ignored)", e);
                 }
-                version = obj.getString("tag_name");
-                changelog = obj.getString("body");
-                uploadDate = obj.getString("published_at").replaceAll("[TZ]", " ");
-                uploadDate = LocaleController.formatDateTime(getMillisFromDate(uploadDate, "yyyy-M-dd hh:mm:ss") / 1000);
-                Update update = new Update(version, changelog, size, downloadURL, uploadDate);
-                if (update.isNew() && fragment != null) {
-                    checkDirs();
-                    AndroidUtilities.runOnUIThread(() -> {
-                        (new UpdaterBottomSheet(fragment.getContext(), fragment, true, update)).show();
-                        if (onUpdateFound != null)
-                            onUpdateFound.run();
-                    });
-                } else {
-                    if (onUpdateNotFound != null)
-                        AndroidUtilities.runOnUIThread(onUpdateNotFound::run);
-                }
-            } catch (Exception e) {
-                FileLog.e(e);
+            } catch (Throwable t) {
+                FileLog.e("UpdaterUtils: unexpected error in update check", t);
+            } finally {
+                checkingForUpdates = false;
             }
-            checkingForUpdates = false;
         }, 200);
     }
 

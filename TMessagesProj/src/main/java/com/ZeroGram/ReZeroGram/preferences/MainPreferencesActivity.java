@@ -219,13 +219,13 @@ public class MainPreferencesActivity extends BasePreferencesActivity {
             if (!BuildVars.PM_BUILD)
                 (new UpdaterBottomSheet(getParentActivity(), this, false, null)).show();
         } else if (position == sourceCodeRow) {
-            Browser.openUrl(getParentActivity(), "https://github.com/ZeroGram/ReZeroGram");
+            Browser.openUrl(getParentActivity(), "https://github.com/animebyst07-stack/ReZeroGram");
         } else if (position == channelRow) {
             Browser.openUrl(getParentActivity(), "https://t.me/zerogram_official");
         } else if (position == groupRow) {
             Browser.openUrl(getParentActivity(), "https://t.me/zerogram_chat");
         } else if (position == crowdinRow) {
-            Browser.openUrl(getParentActivity(), "https://github.com/ZeroGram/ReZeroGram");
+            Browser.openUrl(getParentActivity(), "https://github.com/animebyst07-stack/ReZeroGram");
         } else if (position == appearanceRow) {
             presentFragment(new AppearancePreferencesActivity());
         } else if (position == chatsRow) {

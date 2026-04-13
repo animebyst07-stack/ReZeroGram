@@ -3756,27 +3756,29 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
             }
 
             // ============ DEBUG LOG PANEL (ReZeroGram auth diagnostics) ============
+            // Floating collapsible panel at the top — does NOT interfere with keyboard or input
             {
+                final android.widget.FrameLayout debugContainer = new android.widget.FrameLayout(context);
+
                 LinearLayout debugPanel = new LinearLayout(context);
                 debugPanel.setOrientation(LinearLayout.VERTICAL);
-                debugPanel.setBackgroundColor(0xDD111111);
-                debugPanel.setPadding(0, AndroidUtilities.dp(2), 0, 0);
+                debugPanel.setBackgroundColor(0xCC1A1A2E);
 
                 LinearLayout debugHeaderRow = new LinearLayout(context);
                 debugHeaderRow.setOrientation(LinearLayout.HORIZONTAL);
                 debugHeaderRow.setGravity(Gravity.CENTER_VERTICAL);
-                debugHeaderRow.setPadding(AndroidUtilities.dp(8), AndroidUtilities.dp(5), AndroidUtilities.dp(8), AndroidUtilities.dp(5));
+                debugHeaderRow.setPadding(AndroidUtilities.dp(10), AndroidUtilities.dp(4), AndroidUtilities.dp(10), AndroidUtilities.dp(4));
 
                 final TextView debugHeaderText = new TextView(context);
-                debugHeaderText.setText("▶ Debug Logs (tap to expand)");
+                debugHeaderText.setText("▶ Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + ")");
                 debugHeaderText.setTextColor(0xFFFFCC00);
-                debugHeaderText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 10);
+                debugHeaderText.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 11);
                 debugHeaderText.setTypeface(android.graphics.Typeface.MONOSPACE);
 
                 final TextView copyBtn = new TextView(context);
                 copyBtn.setText("[Copy]");
                 copyBtn.setTextColor(0xFF00FF88);
-                copyBtn.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 10);
+                copyBtn.setTextSize(android.util.TypedValue.COMPLEX_UNIT_DIP, 11);
                 copyBtn.setPadding(AndroidUtilities.dp(12), 0, AndroidUtilities.dp(4), 0);
 
                 debugHeaderRow.addView(debugHeaderText, LayoutHelper.createLinear(0, LayoutHelper.WRAP_CONTENT, 1f));
@@ -3784,7 +3786,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
 
                 final android.widget.ScrollView debugScroll = new android.widget.ScrollView(context);
                 debugScroll.setVisibility(View.GONE);
-                debugScroll.setBackgroundColor(0xDD000000);
+                debugScroll.setBackgroundColor(0xEE0D0D1A);
 
                 final TextView debugTextView = new TextView(context);
                 debugTextView.setTextColor(0xFFDDDDDD);
@@ -3798,11 +3800,11 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 debugHeaderRow.setOnClickListener(v -> {
                     if (debugScroll.getVisibility() == View.VISIBLE) {
                         debugScroll.setVisibility(View.GONE);
-                        debugHeaderText.setText("▶ Debug Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + " lines)");
+                        debugHeaderText.setText("▶ Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + ")");
                     } else {
                         debugScroll.setVisibility(View.VISIBLE);
                         debugTextView.setText(com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getLogs());
-                        debugHeaderText.setText("▼ Debug Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + " lines)");
+                        debugHeaderText.setText("▼ Logs (" + com.ZeroGram.ReZeroGram.AyuDebugLogBuffer.getCount() + ")");
                         debugScroll.post(() -> debugScroll.fullScroll(View.FOCUS_DOWN));
                     }
                 });
@@ -3821,8 +3823,14 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 });
 
                 debugPanel.addView(debugHeaderRow, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-                debugPanel.addView(debugScroll, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 150));
-                addView(debugPanel, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, 0, 8, 0, 4));
+                debugPanel.addView(debugScroll, new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, AndroidUtilities.dp(120)));
+
+                debugContainer.addView(debugPanel, LayoutHelper.createFrame(
+                    LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
+                    Gravity.TOP | Gravity.LEFT, 0, 0, 0, 0));
+
+                addView(debugContainer, 0, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
             }
         }
 
