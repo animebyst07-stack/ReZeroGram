@@ -7293,6 +7293,9 @@ public class TLRPC {
                 case 0xe57b1432:
                     result = new TL_auth_sentCodeTypeFirebaseSms();
                     break;
+                case 0xa416ac81:
+                    result = new TL_auth_sentCodeTypeWord();
+                    break;
             }
             if (result == null && exception) {
                 throw new RuntimeException(String.format("can't parse magic %x in auth_SentCodeType", constructor));
@@ -7473,6 +7476,21 @@ public class TLRPC {
                 stream.writeInt32(push_timeout);
             }
             stream.writeInt32(length);
+        }
+    }
+
+    public static class TL_auth_sentCodeTypeWord extends auth_SentCodeType {
+        public static int constructor = 0xa416ac81;
+
+        public String beginning;
+
+        public void readParams(AbstractSerializedData stream, boolean exception) {
+            beginning = stream.readString(exception);
+        }
+
+        public void serializeToStream(AbstractSerializedData stream) {
+            stream.writeInt32(constructor);
+            stream.writeString(beginning);
         }
     }
 
@@ -18528,7 +18546,7 @@ public class TLRPC {
             if ((flags & 256) != 0) {
                 token = stream.readString(exception);
             }
-            app_sandbox = (flags & 256) != 0;
+            app_sandbox = (flags & 512) != 0;
         }
 
         public void serializeToStream(AbstractSerializedData stream) {
@@ -18538,7 +18556,7 @@ public class TLRPC {
             flags = allow_app_hash ? (flags | 16) : (flags &~ 16);
             flags = allow_missed_call ? (flags | 32) : (flags &~ 32);
             flags = allow_firebase ? (flags | 128) : (flags &~ 128);
-            flags = app_sandbox ? (flags | 256) : (flags &~ 256);
+            flags = app_sandbox ? (flags | 512) : (flags &~ 512);
             stream.writeInt32(flags);
             if ((flags & 64) != 0) {
                 stream.writeInt32(0x1cb5c415);

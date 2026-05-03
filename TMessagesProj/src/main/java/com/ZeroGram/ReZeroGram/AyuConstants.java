@@ -49,7 +49,7 @@ public class AyuConstants {
 
     public static String AYU_DATABASE = "ayu-data";
 
-    public static String APP_GITHUB = "animebyst07-stack/ReZeroGram";
+    public static String APP_GITHUB = "artemjsdx/ReZeroGram";
     public static String APP_NAME = "ZeroGram";
 
     public static String BUILD_STORE_PACKAGE = "com.android.vending";
