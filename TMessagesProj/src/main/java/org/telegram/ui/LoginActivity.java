@@ -3960,27 +3960,39 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         }
 
         private void tryHideProgress(boolean cancel, boolean animate) {
+            FileLog.d("RZG_AUTH: tryHideProgress cancel=" + cancel + " animate=" + animate + " starsToDotsDrawable=" + (starsToDotsDrawable != null) + " isDotsVisible=" + isDotsAnimationVisible);
             if (starsToDotsDrawable != null) {
                 if (!isDotsAnimationVisible) {
+                    FileLog.d("RZG_AUTH: tryHideProgress -> dots not visible, needHideProgress directly");
                     needHideProgress(cancel, animate);
                     return;
                 }
+                FileLog.d("RZG_AUTH: tryHideProgress -> dots visible, starting reverse animation + 2s safety fallback");
                 isDotsAnimationVisible = false;
                 blueImageView.setAutoRepeat(false);
                 dotsDrawable.setAutoRepeat(0);
+                final boolean fCancel = cancel;
+                final boolean fAnimate = animate;
                 dotsDrawable.setOnFinishCallback(()-> AndroidUtilities.runOnUIThread(()->{
+                    FileLog.d("RZG_AUTH: tryHideProgress dotsDrawable.onFinish fired");
                     dotsToStarsDrawable.setOnAnimationEndListener(()-> AndroidUtilities.runOnUIThread(()->{
+                        FileLog.d("RZG_AUTH: tryHideProgress dotsToStars.onEnd fired -> needHideProgress");
                         blueImageView.setAutoRepeat(false);
                         blueImageView.setAnimation(hintDrawable);
+                        needHideProgress(fCancel, fAnimate);
                     }));
-
                     blueImageView.setAutoRepeat(false);
                     dotsToStarsDrawable.setCurrentFrame(0, false);
                     blueImageView.setAnimation(dotsToStarsDrawable);
                     blueImageView.playAnimation();
                 }), dotsDrawable.getFramesCount() - 1);
+                AndroidUtilities.runOnUIThread(() -> {
+                    FileLog.d("RZG_AUTH: tryHideProgress safety fallback fired -> needHideProgress");
+                    needHideProgress(fCancel, false);
+                }, 2000);
                 return;
             }
+            FileLog.d("RZG_AUTH: tryHideProgress -> no starsToDotsDrawable, needHideProgress directly");
             needHideProgress(cancel, animate);
         }
 
@@ -4452,6 +4464,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                             }
                         }
                     }), ConnectionsManager.RequestFlagFailOnServerErrors);
+                    FileLog.d("RZG_AUTH: signIn request queued, reqId=" + reqId);
                     tryShowProgress(reqId, true);
                     showDoneButton(true, true);
                     break;
@@ -4509,12 +4522,13 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     break;
                 }
                 default: {
-                    FileLog.d("RZG_AUTH: sending TL_auth_signIn, phone=" + requestPhone + ", code_len=" + (code != null ? code.length() : 0));
+                    FileLog.d("RZG_AUTH: sending TL_auth_signIn, phone=" + requestPhone + ", code_len=" + (code != null ? code.length() : 0) + ", hash_len=" + (phoneHash != null ? phoneHash.length() : 0) + ", hash_null=" + (phoneHash == null));
                     TLRPC.TL_auth_signIn req = new TLRPC.TL_auth_signIn();
                     req.phone_number = requestPhone;
                     req.phone_code = code;
                     req.phone_code_hash = phoneHash;
                     req.flags |= 1;
+                    FileLog.d("RZG_AUTH: req built: flags=" + req.flags + ", phone_number set=" + (req.phone_number != null) + ", hash_null=" + (req.phone_code_hash == null) + ", code_null=" + (req.phone_code == null));
                     destroyTimer();
 
                     codeFieldContainer.isFocusSuppressed = true;
@@ -4523,8 +4537,10 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     }
 
                     int reqId = ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
-                        FileLog.d("RZG_AUTH: signIn response received, error=" + (error != null ? error.text : "null") + ", response=" + (response != null ? response.getClass().getSimpleName() : "null"));
+                        FileLog.d("RZG_AUTH: signIn response received, error=" + (error != null ? error.text : "null") + ", response=" + (response != null ? response.getClass().getName() : "null") + ", constructor=0x" + (response != null ? Integer.toHexString(response.constructor) : "null"));
+                        FileLog.d("RZG_AUTH: calling tryHideProgress...");
                         tryHideProgress(false, true);
+                        FileLog.d("RZG_AUTH: tryHideProgress returned");
 
                         boolean ok = false;
 
@@ -4534,6 +4550,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                             showDoneButton(false, true);
                             destroyTimer();
                             destroyCodeTimer();
+                            FileLog.d("RZG_AUTH: success — isSignUpRequired=" + (response instanceof TLRPC.TL_auth_authorizationSignUpRequired) + ", isAuthorization=" + (response instanceof TLRPC.TL_auth_authorization));
                             if (response instanceof TLRPC.TL_auth_authorizationSignUpRequired) {
                                 FileLog.d("RZG_AUTH: sign up required, navigating to register");
                                 TLRPC.TL_auth_authorizationSignUpRequired authorization = (TLRPC.TL_auth_authorizationSignUpRequired) response;
@@ -4547,10 +4564,22 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
 
                                 animateSuccess(() -> setPage(VIEW_REGISTER, true, params, false));
                             } else {
-                                FileLog.d("RZG_AUTH: auth success, calling animateSuccess -> onAuthSuccess");
+                                FileLog.d("RZG_AUTH: auth success, calling animateSuccess");
+                                final TLRPC.TLObject finalResp = response;
                                 animateSuccess(() -> {
-                                    FileLog.d("RZG_AUTH: animateSuccess callback fired, calling onAuthSuccess");
-                                    onAuthSuccess((TLRPC.TL_auth_authorization) response);
+                                    FileLog.d("RZG_AUTH: animateSuccess callback FIRED, type=" + (finalResp != null ? finalResp.getClass().getName() : "null"));
+                                    try {
+                                        if (finalResp instanceof TLRPC.TL_auth_authorization) {
+                                            FileLog.d("RZG_AUTH: cast OK -> calling onAuthSuccess");
+                                            onAuthSuccess((TLRPC.TL_auth_authorization) finalResp);
+                                        } else {
+                                            FileLog.e("RZG_AUTH: UNEXPECTED type! " + (finalResp != null ? finalResp.getClass().getName() : "null") + " 0x" + (finalResp != null ? Integer.toHexString(finalResp.constructor) : "null"));
+                                            needFinishActivity(false, false, 0);
+                                        }
+                                    } catch (Exception castEx) {
+                                        FileLog.e("RZG_AUTH: EXCEPTION in animateSuccess callback", castEx);
+                                        try { needFinishActivity(false, false, 0); } catch (Exception fe) { FileLog.e("RZG_AUTH: recovery failed", fe); }
+                                    }
                                 });
                             }
                         } else {
@@ -4647,14 +4676,19 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
         }
 
         private void animateSuccess(Runnable callback) {
+            FileLog.d("RZG_AUTH: animateSuccess() called, currentType=" + currentType);
             if (currentType == AUTH_TYPE_FLASH_CALL) {
+                FileLog.d("RZG_AUTH: animateSuccess FLASH_CALL -> immediate callback");
                 callback.run();
                 return;
             }
             if (codeFieldContainer == null || codeFieldContainer.codeField == null || codeFieldContainer.codeField.length == 0) {
+                FileLog.d("RZG_AUTH: animateSuccess codeFieldContainer null/empty -> immediate callback");
                 callback.run();
                 return;
             }
+            long delay = codeFieldContainer.codeField.length * 75L + 400L;
+            FileLog.d("RZG_AUTH: animateSuccess scheduling callback delay=" + delay + "ms, fields=" + codeFieldContainer.codeField.length);
             for (int i = 0; i < codeFieldContainer.codeField.length; i++) {
                 int finalI = i;
                 codeFieldContainer.postDelayed(()-> {
@@ -4666,6 +4700,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 }, i * 75L);
             }
             codeFieldContainer.postDelayed(()->{
+                FileLog.d("RZG_AUTH: animateSuccess postDelayed FIRED -> running callback");
                 try {
                     for (int i = 0; i < codeFieldContainer.codeField.length; i++) {
                         codeFieldContainer.codeField[i].animateSuccessProgress(0f);
@@ -4673,10 +4708,14 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                 } catch (Exception e) {
                     FileLog.e(e);
                 } finally {
-                    callback.run();
+                    try {
+                        callback.run();
+                    } catch (Exception cbEx) {
+                        FileLog.e("RZG_AUTH: animateSuccess callback threw", cbEx);
+                    }
                     codeFieldContainer.isFocusSuppressed = false;
                 }
-            }, codeFieldContainer.codeField.length * 75L + 400L);
+            }, delay);
         }
 
         private void shakeWrongCode() {
