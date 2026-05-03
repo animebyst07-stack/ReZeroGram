@@ -4537,7 +4537,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                     }
 
                     int reqId = ConnectionsManager.getInstance(currentAccount).sendRequest(req, (response, error) -> AndroidUtilities.runOnUIThread(() -> {
-                        FileLog.d("RZG_AUTH: signIn response received, error=" + (error != null ? error.text : "null") + ", response=" + (response != null ? response.getClass().getName() : "null") + ", constructor=0x" + (response != null ? Integer.toHexString(response.constructor) : "null"));
+                        FileLog.d("RZG_AUTH: signIn response received, error=" + (error != null ? error.text : "null") + ", response=" + (response != null ? response.getClass().getName() : "null"));
                         FileLog.d("RZG_AUTH: calling tryHideProgress...");
                         tryHideProgress(false, true);
                         FileLog.d("RZG_AUTH: tryHideProgress returned");
@@ -4565,7 +4565,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                                 animateSuccess(() -> setPage(VIEW_REGISTER, true, params, false));
                             } else {
                                 FileLog.d("RZG_AUTH: auth success, calling animateSuccess");
-                                final TLRPC.TLObject finalResp = response;
+                                final org.telegram.tgnet.TLObject finalResp = response;
                                 animateSuccess(() -> {
                                     FileLog.d("RZG_AUTH: animateSuccess callback FIRED, type=" + (finalResp != null ? finalResp.getClass().getName() : "null"));
                                     try {
@@ -4573,7 +4573,7 @@ public class LoginActivity extends BaseFragment implements NotificationCenter.No
                                             FileLog.d("RZG_AUTH: cast OK -> calling onAuthSuccess");
                                             onAuthSuccess((TLRPC.TL_auth_authorization) finalResp);
                                         } else {
-                                            FileLog.e("RZG_AUTH: UNEXPECTED type! " + (finalResp != null ? finalResp.getClass().getName() : "null") + " 0x" + (finalResp != null ? Integer.toHexString(finalResp.constructor) : "null"));
+                                            FileLog.e("RZG_AUTH: UNEXPECTED type! " + (finalResp != null ? finalResp.getClass().getName() : "null"));
                                             needFinishActivity(false, false, 0);
                                         }
                                     } catch (Exception castEx) {
