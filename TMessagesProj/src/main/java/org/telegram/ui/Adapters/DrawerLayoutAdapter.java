@@ -159,7 +159,14 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         switch (holder.getItemViewType()) {
             case 0: {
                 DrawerProfileCell profileCell = (DrawerProfileCell) holder.itemView;
-                profileCell.setUser(MessagesController.getInstance(UserConfig.selectedAccount).getUser(UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId()), accountsShown);
+                TLRPC.User drawerUser = MessagesController.getInstance(UserConfig.selectedAccount).getUser(UserConfig.getInstance(UserConfig.selectedAccount).getClientUserId());
+                if (drawerUser == null) {
+                    drawerUser = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
+                    if (drawerUser != null) {
+                        MessagesController.getInstance(UserConfig.selectedAccount).putUser(drawerUser, true);
+                    }
+                }
+                profileCell.setUser(drawerUser, accountsShown);
                 break;
             }
             case 3: {
