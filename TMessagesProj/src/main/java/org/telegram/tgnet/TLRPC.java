@@ -3221,6 +3221,7 @@ public class TLRPC {
     public static abstract class auth_Authorization extends TLObject {
 
         public static auth_Authorization TLdeserialize(AbstractSerializedData stream, int constructor, boolean exception) {
+            FileLog.d("RZG_AUTH: auth_Authorization.TLdeserialize constructor=0x" + Integer.toHexString(constructor));
             auth_Authorization result = null;
             switch (constructor) {
                 case 0x44747e9a:
@@ -3233,12 +3234,16 @@ public class TLRPC {
                     result = new TL_auth_authorization();
                     break;
             }
-            if (result == null && exception) {
-                throw new RuntimeException(String.format("can't parse magic %x in auth_Authorization", constructor));
+            if (result == null) {
+                FileLog.e("RZG_AUTH: UNKNOWN auth_Authorization constructor=0x" + Integer.toHexString(constructor) + " -> fallback to TL_auth_authorization");
+                result = new TL_auth_authorization();
             }
-            if (result != null) {
-                result.readParams(stream, exception);
+            try {
+                result.readParams(stream, false);
+            } catch (Exception readEx) {
+                FileLog.e("RZG_AUTH: auth_Authorization readParams EXCEPTION constructor=0x" + Integer.toHexString(constructor), readEx);
             }
+            FileLog.d("RZG_AUTH: auth_Authorization.TLdeserialize OK constructor=0x" + Integer.toHexString(constructor) + " result=" + result.getClass().getSimpleName());
             return result;
         }
     }
@@ -51910,7 +51915,15 @@ public class TLRPC {
         public EmailVerification email_verification;
 
         public TLObject deserializeResponse(AbstractSerializedData stream, int constructor, boolean exception) {
-            return auth_Authorization.TLdeserialize(stream, constructor, exception);
+            FileLog.d("RZG_AUTH: TL_auth_signIn.deserializeResponse constructor=0x" + Integer.toHexString(constructor));
+            try {
+                TLObject r = auth_Authorization.TLdeserialize(stream, constructor, false);
+                FileLog.d("RZG_AUTH: TL_auth_signIn.deserializeResponse result=" + (r != null ? r.getClass().getSimpleName() : "null"));
+                return r;
+            } catch (Exception e) {
+                FileLog.e("RZG_AUTH: TL_auth_signIn.deserializeResponse EXCEPTION", e);
+                return null;
+            }
         }
 
         public void serializeToStream(AbstractSerializedData stream) {
