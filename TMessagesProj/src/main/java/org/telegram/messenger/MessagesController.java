@@ -4310,13 +4310,13 @@ public class MessagesController extends BaseController implements NotificationCe
             }
         } else {
             if (!fromCache) {
-                users.put(user.id, user);
-                if (user.id == getUserConfig().getClientUserId()) {
-                    if (!user.deleted) {
+                if (user.id == getUserConfig().getClientUserId() && user.deleted) {
+                    FileLog.e("putUser: refusing to overwrite currentUser (in map) with deleted=true for id=" + user.id);
+                } else {
+                    users.put(user.id, user);
+                    if (user.id == getUserConfig().getClientUserId()) {
                         getUserConfig().setCurrentUser(user);
                         getUserConfig().saveConfig(true);
-                    } else {
-                        FileLog.e("putUser: refusing to overwrite currentUser with deleted=true for id=" + user.id);
                     }
                 }
                 getUserNameResolver().update(oldUser, user);
