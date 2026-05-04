@@ -345,6 +345,7 @@ public class DrawerLayoutAdapter extends RecyclerListView.SelectionAdapter {
         if (ExteraConfig.peopleNearby && hasGps) items.add(new Item(12, LocaleController.getString("PeopleNearby", R.string.PeopleNearby), peopleNearbyIcon));
         if (ExteraConfig.savedMessages) items.add(new Item(11, LocaleController.getString("SavedMessages", R.string.SavedMessages), savedIcon));
         items.add(new Item(8, LocaleController.getString("Settings", R.string.Settings), settingsIcon));
+          items.add(new Item(20, "Логи", R.drawable.msg_log));
         if (ExteraConfig.scanQr) {
             items.add(null);
             items.add(new Item(16, LocaleController.getString("AuthAnotherClient", R.string.AuthAnotherClient), scanQrIcon));
