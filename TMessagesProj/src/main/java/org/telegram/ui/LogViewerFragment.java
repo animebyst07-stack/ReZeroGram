@@ -73,7 +73,7 @@ public class LogViewerFragment extends BaseFragment {
         });
 
         ActionBarMenu menu = actionBar.createMenu();
-        menu.addItem(MENU_SCROLL, R.drawable.msg_scroll_down);
+        menu.addItem(MENU_SCROLL, R.drawable.msg_go_down);
         menu.addItem(MENU_SHARE, R.drawable.msg_share);
         menu.addItem(MENU_CLEAR, R.drawable.msg_delete);
 
