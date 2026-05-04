@@ -43,7 +43,11 @@ public class LocaleUtils {
                 break;
             default:
                 TLRPC.User user = UserConfig.getInstance(UserConfig.selectedAccount).getCurrentUser();
-                title = actionBarTitle == 1 && !TextUtils.isEmpty(UserObject.getPublicUsername(user)) ? UserObject.getPublicUsername(user) : UserObject.getFirstName(user);
+                if (UserObject.isDeleted(user)) {
+                    title = LocaleController.getString("exteraAppName", R.string.exteraAppName);
+                } else {
+                    title = actionBarTitle == 1 && !TextUtils.isEmpty(UserObject.getPublicUsername(user)) ? UserObject.getPublicUsername(user) : UserObject.getFirstName(user);
+                }
                 break;
         }
         return title;
