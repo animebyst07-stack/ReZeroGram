@@ -148,6 +148,7 @@ import org.telegram.ui.ActionBar.INavigationLayout;
 import org.telegram.ui.ActionBar.SimpleTextView;
 import org.telegram.ui.ActionBar.Theme;
 import org.telegram.ui.Adapters.DrawerLayoutAdapter;
+import org.telegram.ui.LogViewerFragment;
 import org.telegram.ui.Cells.CheckBoxCell;
 import org.telegram.ui.Cells.DrawerActionCell;
 import org.telegram.ui.Cells.DrawerAddCell;
@@ -634,7 +635,11 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                     drawerLayoutContainer.closeDrawer(false);
                 }
 
-                // --- AyuGram hook
+                } else if (id == 20) {
+                      presentFragment(new LogViewerFragment());
+                      drawerLayoutContainer.closeDrawer(false);
+                  }
+                  // --- AyuGram hook
                 if (id == AyuConstants.DRAWER_TOGGLE_GHOST && AyuConfig.showGhostToggleInDrawer) {
                     var msg = AyuConfig.isGhostModeActive()
                             ? LocaleController.getString("GhostModeDisabled", R.string.GhostModeDisabled)
