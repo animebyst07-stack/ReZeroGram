@@ -4312,8 +4312,12 @@ public class MessagesController extends BaseController implements NotificationCe
             if (!fromCache) {
                 users.put(user.id, user);
                 if (user.id == getUserConfig().getClientUserId()) {
-                    getUserConfig().setCurrentUser(user);
-                    getUserConfig().saveConfig(true);
+                    if (!user.deleted) {
+                        getUserConfig().setCurrentUser(user);
+                        getUserConfig().saveConfig(true);
+                    } else {
+                        FileLog.e("putUser: refusing to overwrite currentUser with deleted=true for id=" + user.id);
+                    }
                 }
                 getUserNameResolver().update(oldUser, user);
                 if (oldUser != null && user.status != null && oldUser.status != null && user.status.expires != oldUser.status.expires) {

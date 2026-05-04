@@ -3235,8 +3235,11 @@ public class TLRPC {
                     break;
             }
             if (result == null) {
-                FileLog.e("RZG_AUTH: UNKNOWN auth_Authorization constructor=0x" + Integer.toHexString(constructor) + " -> fallback to TL_auth_authorization");
-                result = new TL_auth_authorization();
+                FileLog.e("RZG_AUTH: UNKNOWN auth_Authorization constructor=0x" + Integer.toHexString(constructor) + " -> cannot parse unknown type, returning null");
+                if (exception) {
+                    throw new RuntimeException("can't parse magic " + Integer.toHexString(constructor) + " in auth_Authorization");
+                }
+                return null;
             }
             try {
                 result.readParams(stream, false);
@@ -23213,6 +23216,8 @@ public class TLRPC {
         public boolean attach_menu_enabled;
         public EmojiStatus emoji_status;
         public ArrayList<TL_username> usernames = new ArrayList<>();
+        public TL_birthday birthday;
+        public long personal_channel_id;
 
         public static User TLdeserialize(AbstractSerializedData stream, int constructor, boolean exception) {
             User result = null;
@@ -23342,6 +23347,46 @@ public class TLRPC {
         }
     }
 
+    public static class TL_birthday extends TLObject {
+        public static int constructor = 0x1d998733;
+
+        public int flags;
+        public int day;
+        public int month;
+        public int year;
+
+        public static TL_birthday TLdeserialize(AbstractSerializedData stream, int constructor, boolean exception) {
+            if (TL_birthday.constructor != constructor) {
+                if (exception) {
+                    throw new RuntimeException(String.format("can't parse magic %x in TL_birthday", constructor));
+                }
+                return null;
+            }
+            TL_birthday result = new TL_birthday();
+            result.readParams(stream, exception);
+            return result;
+        }
+
+        public void readParams(AbstractSerializedData stream, boolean exception) {
+            flags = stream.readInt32(exception);
+            day = stream.readInt32(exception);
+            month = stream.readInt32(exception);
+            if ((flags & 1) != 0) {
+                year = stream.readInt32(exception);
+            }
+        }
+
+        public void serializeToStream(AbstractSerializedData stream) {
+            stream.writeInt32(constructor);
+            stream.writeInt32(flags);
+            stream.writeInt32(day);
+            stream.writeInt32(month);
+            if ((flags & 1) != 0) {
+                stream.writeInt32(year);
+            }
+        }
+    }
+
     public static class TL_userEmpty extends User {
         public static int constructor = 0xd3bc4b7a;
 
@@ -23449,6 +23494,12 @@ public class TLRPC {
                     usernames.add(object);
                 }
             }
+            if ((flags2 & 256) != 0) {
+                birthday = TL_birthday.TLdeserialize(stream, stream.readInt32(exception), exception);
+            }
+            if ((flags2 & 512) != 0) {
+                personal_channel_id = stream.readInt64(exception);
+            }
         }
 
         public void serializeToStream(AbstractSerializedData stream) {
@@ -23475,6 +23526,8 @@ public class TLRPC {
             flags = premium ? (flags | 268435456) : (flags &~ 268435456);
             flags = attach_menu_enabled ? (flags | 536870912) : (flags &~ 536870912);
             flags2 = bot_can_edit ? (flags2 | 2) : (flags2 &~ 2);
+            flags2 = birthday != null ? (flags2 | 256) : (flags2 & ~256);
+            flags2 = personal_channel_id != 0 ? (flags2 | 512) : (flags2 & ~512);
             stream.writeInt32(flags);
             stream.writeInt32(flags2);
             stream.writeInt64(id);
@@ -23526,6 +23579,12 @@ public class TLRPC {
                 for (int a = 0; a < count; a++) {
                     usernames.get(a).serializeToStream(stream);
                 }
+            }
+            if ((flags2 & 256) != 0) {
+                birthday.serializeToStream(stream);
+            }
+            if ((flags2 & 512) != 0) {
+                stream.writeInt64(personal_channel_id);
             }
         }
     }
