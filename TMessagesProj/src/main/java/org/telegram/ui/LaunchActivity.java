@@ -633,13 +633,12 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                         drawerLayoutContainer.setAllowOpenDrawer(true, false);
                     }
                     drawerLayoutContainer.closeDrawer(false);
+                } else if (id == 20) {
+                    presentFragment(new LogViewerFragment());
+                    drawerLayoutContainer.closeDrawer(false);
                 }
 
-                } else if (id == 20) {
-                      presentFragment(new LogViewerFragment());
-                      drawerLayoutContainer.closeDrawer(false);
-                  }
-                  // --- AyuGram hook
+                // --- AyuGram hook
                 if (id == AyuConstants.DRAWER_TOGGLE_GHOST && AyuConfig.showGhostToggleInDrawer) {
                     var msg = AyuConfig.isGhostModeActive()
                             ? LocaleController.getString("GhostModeDisabled", R.string.GhostModeDisabled)
